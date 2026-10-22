@@ -1,0 +1,27 @@
+{% doc %}
+  Renders an optional border around the full section without changing child borders.
+  Existing sections with their own border controls use their original renderer.
+
+  @param {string} section_id - Unprefixed Shopify section ID.
+  @param {object} settings - Section settings containing section_border_style,
+    section_border_width, border_color, use_color_scheme, and color_scheme.
+
+  @example
+  {% render 'section-border', section_id: section.id, settings: section.settings %}
+{% enddoc %}
+
+{% if settings.section_border_style == 'solid' %}
+  {% liquid
+    assign border_color = settings.border_color
+    if settings.use_color_scheme and settings.color_scheme != blank
+      assign border_color = settings.color_scheme.settings.border
+    endif
+  %}
+  {% style %}
+    #shopify-section-{{ section_id }} {
+      border-width: {{ settings.section_border_width }}px;
+      border-style: solid;
+      border-color: {{ border_color | default: 'var(--color-border)' }};
+    }
+  {% endstyle %}
+{% endif %}

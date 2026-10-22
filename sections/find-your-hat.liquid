@@ -1,0 +1,513 @@
+{% comment %}
+  Find Your Hat preloads collection products and metafields once, then filters locally.
+  @example
+  Filters only the Hats collection using the namespace containing type, color, patch, and season.
+{% endcomment %}
+{% liquid
+  assign hats = collections.hats
+  assign namespace = section.settings.metafield_namespace
+  assign section_color_scheme = nil
+  if section.settings.use_color_scheme
+    assign section_color_scheme = section.settings.color_scheme
+  endif
+%}
+{% render 'contrast-override', color_scheme: section_color_scheme, background_color: section.settings.background_color, section_id: section.id %}
+{% render 'section-border', section_id: section.id, settings: section.settings %}
+{% render 'product-card-styles' %}
+{% render 'product-card-gallery-zoom-details-styles' %}
+<script src="{{ 'find-your-hat.js' | asset_url }}" type="module" fetchpriority="low"></script>
+<div class="section-background color-custom-{{ section.id }}"></div>
+{% paginate hats.products by 250 %}
+<find-your-hat
+  class="section section--{{ section.settings.section_width }} color-custom-{{ section.id }} spacing-style"
+  data-section-id="{{ section.id }}" data-next="{{ paginate.next.url | escape }}"
+  data-count="{{ 'hat_finder.count' | t | escape }}" data-empty="{{ 'hat_finder.empty' | t | escape }}" data-error="{{ 'hat_finder.error' | t | escape }}"
+  style="{% render 'spacing-style', settings: section.settings %}
+    --hat-search-width: {{ section.settings.search_width_desktop_px }}px;
+    --hat-search-mobile: {{ section.settings.search_width_mobile }}%; --hat-results-mobile: {{ section.settings.results_width_mobile }}%;
+    --hat-results-height: {% if section.settings.results_height_desktop > 0 %}{{ section.settings.results_height_desktop }}px{% else %}auto{% endif %};
+    --hat-search-height-mobile: {% if section.settings.search_height_mobile > 0 %}{{ section.settings.search_height_mobile }}px{% else %}auto{% endif %};
+    --hat-results-height-mobile: {% if section.settings.results_height_mobile > 0 %}{{ section.settings.results_height_mobile }}px{% else %}auto{% endif %};
+    --hat-card-width-desktop: {{ section.settings.card_width_desktop }}px; --hat-card-width-mobile: {{ section.settings.card_width_mobile_px }}px; --hat-gap: {{ section.settings.columns_gap }}px;"
+>
+  <div class="hat-finder{% if section.settings.reverse_mobile %} hat-finder--reverse{% endif %}">
+    <div class="hat-finder__search">
+      {% if section.settings.heading != blank %}<h2>{{ section.settings.heading | escape }}</h2>{% endif %}
+      {% assign fields = 'style,color,patch,season' | split: ',' %}
+      {% for field in fields %}
+        {% liquid
+          assign label_key = 'hat_finder.' | append: field
+          case field
+            when 'style'
+              assign values = 'Bucket Hat|Trucker Hat|Baseball Hat' | split: '|'
+              assign keys = 'bucket,trucker,baseball' | split: ','
+              assign filter_key = 'type'
+            when 'color'
+              assign values = 'Black|White|Camo|Ice Blue' | split: '|'
+              assign keys = 'black,white,camo,ice_blue' | split: ','
+              assign filter_key = 'color'
+            when 'patch'
+              assign values = 'Leather' | split: '|'
+              assign keys = 'leather' | split: ','
+              assign filter_key = 'patch'
+            when 'season'
+              assign values = 'Spring|Summer|Fall|Winter' | split: '|'
+              assign keys = 'spring,summer,fall,winter' | split: ','
+              assign filter_key = 'season'
+          endcase
+        %}
+        <div class="hat-finder__filter">
+        <label for="Hat-{{ section.id }}-{{ field }}">{{ label_key | t }}</label>
+        <select id="Hat-{{ section.id }}-{{ field }}" data-filter="{{ filter_key }}" on:change="/filter" disabled>
+          <option value="">{{ 'hat_finder.all' | t }}</option>
+          {% for value in values %}{% assign key = 'hat_finder.' | append: keys[forloop.index0] %}<option value="{{ value | escape }}">{{ key | t }}</option>{% endfor %}
+        </select>
+        </div>
+      {% endfor %}
+      <noscript>{{ 'hat_finder.unavailable' | t }}</noscript>
+    </div>
+    <div class="hat-finder__results" role="region" aria-label="{{ 'hat_finder.results' | t }}">
+      <p ref="status" role="status">{{ 'hat_finder.loading' | t }}</p>
+      <div class="hat-finder__track" ref="track" tabindex="0" role="group" aria-label="{{ 'hat_finder.results' | t }}">
+        {% for product in hats.products %}
+          <div class="hat-finder__item" data-hat-item
+            data-type="{{ product.metafields[namespace].type.value | join: ', ' | escape }}"
+            data-color="{{ product.metafields[namespace].color.value | join: ', ' | escape }}"
+            data-patch="{{ product.metafields[namespace].patch.value | join: ', ' | escape }}"
+            data-season="{{ product.metafields[namespace].season.value | join: ', ' | escape }}">
+            {% content_for 'block', type: '_product-card', id: 'static-product-card', closest.product: product, product_view_context: 'collection' %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</find-your-hat>
+{% endpaginate %}
+{% stylesheet %}
+  .hat-finder { display: flex; flex-direction: column; gap: var(--gap-xl); width: 100%; min-width: 0; }
+  .hat-finder__search { display: flex; flex-direction: column; gap: var(--gap-sm); width: var(--hat-search-mobile); height: var(--hat-search-height-mobile); overflow: auto; }
+  .hat-finder__filter { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); align-items: center; gap: var(--gap-sm); }
+  .hat-finder__filter label { overflow-wrap: anywhere; }
+  .hat-finder__filter select { min-width: 0; }
+  .hat-finder__search select { width: 100%; min-height: 44px; color: var(--color-input-text); background: var(--color-input-background); border: 1px solid var(--color-input-border); border-radius: var(--style-border-radius-inputs); padding: var(--padding-sm); }
+  .hat-finder__results { width: var(--hat-results-mobile); height: var(--hat-results-height-mobile); min-width: 0; overflow: auto; }
+  .hat-finder__track { display: flex; width: 100%; min-width: 0; gap: var(--hat-gap); overflow-x: auto; scroll-snap-type: x mandatory; padding-block: var(--padding-sm); scrollbar-width: none; }
+  .hat-finder__track::-webkit-scrollbar { display: none; }
+  @media (hover: hover) and (pointer: fine) {
+    .hat-finder__track { cursor: grab; }
+    .hat-finder__track a { cursor: inherit; }
+  }
+  .hat-finder__track--dragging { cursor: grabbing; user-select: none; scroll-snap-type: none; scroll-behavior: auto; }
+  .hat-finder__item { flex: 0 0 auto; width: var(--hat-card-width-mobile); min-width: 0; scroll-snap-align: start; }
+  .hat-finder__item > product-card { display: grid; width: 100%; min-width: 0; height: 100%; }
+  .hat-finder__item[hidden] { display: none; }
+  @media screen and (min-width: 750px) {
+    .hat-finder { display: grid; grid-template-columns: minmax(0, var(--hat-search-width)) minmax(0, 1fr); }
+    .hat-finder__search { width: 100%; height: 100%; }
+    .hat-finder__results { width: 100%; height: var(--hat-results-height); }
+    .hat-finder__item { width: var(--hat-card-width-desktop); }
+  }
+
+  .hat-finder__search select{
+    min-height: auto;
+    padding: var(--padding-xs);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "t:names.find_your_hat",
+  "class": "find-your-hat-section",
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    },
+    {
+      "type": "_divider"
+    }
+  ],
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "use_color_scheme",
+      "label": "t:settings.use_color_scheme",
+      "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1"
+    },
+    {
+      "type": "range",
+      "id": "columns",
+      "visible_if": "{{ false }}",
+      "label": "t:settings.columns",
+      "min": 1,
+      "max": 8,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "mobile_columns",
+      "visible_if": "{{ false }}",
+      "label": "t:settings.mobile_columns",
+      "options": [
+        {
+          "value": "1",
+          "label": "t:options.one_number"
+        },
+        {
+          "value": "2",
+          "label": "t:options.two_number"
+        }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "range",
+      "id": "columns_gap",
+      "label": "t:settings.horizontal_gap",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "range",
+      "id": "rows_gap",
+      "label": "t:settings.vertical_gap",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "select",
+      "id": "section_border_style",
+      "label": "t:settings.style",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.none"
+        },
+        {
+          "value": "solid",
+          "label": "t:options.solid"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "section_border_width",
+      "label": "t:settings.thickness",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "unit": "px",
+      "default": 1
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "t:settings.color",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "text",
+      "id": "metafield_namespace",
+      "label": "t:settings.hat_namespace",
+      "default": "custom"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "t:settings.heading",
+      "default": "Find Your Hat"
+    },
+    {
+      "type": "checkbox",
+      "id": "reverse_mobile",
+      "label": "t:settings.hat_reverse_mobile",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "visible_if": "{{ false }}",
+      "label": "t:settings.hat_show_arrows",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "t:settings.hat_search"
+    },
+    {
+      "type": "range",
+      "id": "search_width_desktop",
+      "visible_if": "{{ false }}",
+      "label": "t:settings.width_desktop",
+      "min": 20,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "search_width_desktop_px",
+      "label": "t:settings.width_desktop",
+      "min": 100,
+      "max": 2000,
+      "step": 20,
+      "unit": "px",
+      "default": 320
+    },
+    {
+      "type": "range",
+      "id": "search_width_mobile",
+      "label": "t:settings.width_mobile",
+      "min": 20,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "search_height_mobile",
+      "label": "t:settings.mobile_height",
+      "min": 0,
+      "max": 1000,
+      "step": 10,
+      "unit": "px",
+      "default": 0,
+      "info": "t:info.hat_height_auto"
+    },
+    {
+      "type": "header",
+      "content": "t:names.product_card"
+    },
+    {
+      "type": "range",
+      "id": "card_width_desktop",
+      "label": "t:settings.width_desktop",
+      "min": 100,
+      "max": 800,
+      "step": 10,
+      "unit": "px",
+      "default": 280
+    },
+    {
+      "type": "range",
+      "id": "card_width_mobile",
+      "visible_if": "{{ false }}",
+      "label": "t:settings.width_mobile",
+      "min": 20,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "card_width_mobile_px",
+      "label": "t:settings.width_mobile",
+      "min": 100,
+      "max": 600,
+      "step": 10,
+      "unit": "px",
+      "default": 280
+    },
+    {
+      "type": "header",
+      "content": "t:settings.hat_results"
+    },
+    {
+      "type": "range",
+      "id": "results_height_desktop",
+      "label": "t:settings.desktop_height",
+      "min": 0,
+      "max": 1000,
+      "step": 10,
+      "unit": "px",
+      "default": 0,
+      "info": "t:info.hat_height_auto"
+    },
+    {
+      "type": "range",
+      "id": "results_width_mobile",
+      "label": "t:settings.width_mobile",
+      "min": 20,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "results_height_mobile",
+      "label": "t:settings.mobile_height",
+      "min": 0,
+      "max": 1000,
+      "step": 10,
+      "unit": "px",
+      "default": 0,
+      "info": "t:info.hat_height_auto"
+    }
+  ],
+  "presets": [
+    {
+      "name": "t:names.find_your_hat",
+      "category": "t:categories.products",
+      "settings": {
+        "columns": 3,
+        "mobile_columns": "1",
+        "padding-block-start": 40,
+        "padding-block-end": 40
+      },
+      "blocks": {
+        "static-product-card": {
+          "type": "_product-card",
+          "name": "t:names.product_card",
+          "static": true,
+          "settings": {
+            "product_card_gap": 4,
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "product-card-gallery": {
+              "type": "_product-card-gallery",
+              "name": "t:names.product_card_media",
+              "settings": {
+                "image_ratio": "adapt",
+                "border": "none",
+                "border_width": 1,
+                "border_opacity": 100,
+                "border_radius": 0,
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            },
+            "product_title": {
+              "type": "product-title",
+              "name": "t:names.product_title",
+              "settings": {
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
+                "type_preset": "paragraph",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "background": false,
+                "background_color": "#00000026",
+                "corner_radius": 0,
+                "padding-block-start": 4,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            },
+            "price": {
+              "type": "price",
+              "name": "t:names.product_price",
+              "settings": {
+                "show_sale_price_first": true,
+                "show_installments": false,
+                "show_tax_info": false,
+                "type_preset": "h6",
+                "width": "100%",
+                "alignment": "left",
+                "font": "var(--font-body--family)",
+                "font_size": "1rem",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "padding-block-start": 0,
+                "padding-block-end": 0,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            }
+          },
+          "block_order": [
+            "product-card-gallery",
+            "product_title",
+            "price"
+          ]
+        }
+      },
+      "block_order": []
+    }
+  ]
+}
+{% endschema %}

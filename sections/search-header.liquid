@@ -1,0 +1,152 @@
+{% liquid
+  assign section_color_scheme = nil
+  if section.settings.use_color_scheme
+    assign section_color_scheme = section.settings.color_scheme
+  endif
+%}
+
+{% render 'section-border', section_id: section.id, settings: section.settings %}
+
+
+
+{% liquid
+  if section.settings.background_color != blank or section_color_scheme != blank
+    render 'contrast-override', color_scheme: section_color_scheme, background_color: section.settings.background_color, section_id: section.id
+  endif
+%}
+
+<div
+  class="section-background{% if section.settings.background_color != blank or section_color_scheme != blank %} color-custom-{{ section.id }}{% endif %}"
+></div>
+<div class="section section--page-width{% if section.settings.background_color != blank or section_color_scheme != blank %} color-custom-{{ section.id }}{% endif %}">
+  <div
+    class="spacing-style search-page__header"
+    style="
+      --horizontal-alignment: {{ section.settings.alignment }};
+      {% render 'spacing-style', settings: section.settings %}
+    "
+  >
+    {% assign heading_text = 'content.search' | t %}
+
+    {% if search.performed %}
+      {% assign heading_text = 'content.search_results' | t %}
+    {% endif %}
+
+    {% capture heading_text %}
+      <h3>{{ heading_text }}</h3>
+    {% endcapture %}
+
+    {% content_for 'block', id: 'heading', type: '_heading', text: heading_text %}
+    {% content_for 'block', id: 'search', type: '_search-input' %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "t:names.search",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "use_color_scheme",
+      "label": "t:settings.use_color_scheme",
+      "default": false
+    },
+    {
+      "type": "color_scheme",
+      "id": "color_scheme",
+      "label": "t:settings.color_scheme",
+      "default": "scheme-1",
+      "visible_if": "{{ section.settings.use_color_scheme }}"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "t:settings.alignment",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "t:options.direction_start"
+        },
+        {
+          "value": "center",
+          "label": "t:options.direction_center"
+        },
+        {
+          "value": "flex-end",
+          "label": "t:options.direction_end"
+        }
+      ],
+      "default": "flex-start"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "placeholder": "t:settings.default",
+      "visible_if": "{{ section.settings.use_color_scheme == false }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "t:content.borders"
+    },
+    {
+      "type": "select",
+      "id": "section_border_style",
+      "label": "t:settings.style",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.none"
+        },
+        {
+          "value": "solid",
+          "label": "t:options.solid"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "section_border_width",
+      "label": "t:settings.thickness",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "unit": "px",
+      "default": 1,
+      "visible_if": "{{ section.settings.section_border_style == 'solid' }}"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "t:settings.color",
+      "placeholder": "t:settings.default",
+      "visible_if": "{{ section.settings.use_color_scheme == false and section.settings.section_border_style == 'solid' }}"
+    }
+  ]
+}
+{% endschema %}
