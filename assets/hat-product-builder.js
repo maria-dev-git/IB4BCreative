@@ -3,14 +3,66 @@ import '@theme/product-form';
 
 /** Collection product and variant selection with no section fetches or page replacement. */
 class HatProductBuilder extends Component {
+  /** @type {AbortController | undefined} */
+  #globoListeners;
+  #updatingGlobo = false;
+  #globoObserver = new MutationObserver(() => this.#enforceGloboChoice());
+
   connectedCallback() {
     super.connectedCallback();
     this.#initialize();
+    this.#globoListeners?.abort();
+    this.#globoListeners = new AbortController();
+    // Globo also emits non-bubbling change events; capture reaches those inputs.
+    this.addEventListener('change', this.#onGloboChange, { capture: true, signal: this.#globoListeners.signal });
+    this.#globoObserver.observe(this, { childList: true, subtree: true });
+    this.#enforceGloboChoice();
   }
 
   updatedCallback() {
     super.updatedCallback();
     this.#initialize();
+    this.#enforceGloboChoice();
+  }
+
+  disconnectedCallback() {
+    this.#globoListeners?.abort();
+    this.#globoObserver.disconnect();
+    super.disconnectedCallback();
+  }
+
+  /** @param {Event} event - A Globo image-option selection or deselection. */
+  #onGloboChange = (event) => {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement) || !input.checked ||
+      !input.matches('.gpo-app input[type="radio"][data-type="image-swatches"]')) return;
+    this.#enforceGloboChoice(input);
+  };
+
+  /** Keep one image option per product, including after Globo inserts new groups.
+   * @param {HTMLInputElement} [preferred] - Most recently selected option.
+   */
+  #enforceGloboChoice(preferred) {
+    if (this.#updatingGlobo) return;
+    this.#updatingGlobo = true;
+    try {
+      for (const panel of this.querySelectorAll('[data-hat-panel]')) {
+        const checked = /** @type {HTMLInputElement[]} */ ([...panel.querySelectorAll('.gpo-app input[type="radio"][data-type="image-swatches"]:checked')]);
+        const keep = preferred && panel.contains(preferred) ? preferred : checked[0];
+        for (const input of checked) {
+          if (input === keep) continue;
+          input.checked = false;
+          input.removeAttribute('checked');
+          // Match Globo's own deselection path, including its click-toggle state.
+          input.setAttribute('previous-value', 'false');
+          // Globo's target change handlers refresh hidden properties, add-ons,
+          // validation, and prices. Do not modify those generated fields directly.
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    } finally {
+      this.#updatingGlobo = false;
+    }
   }
 
   #initialize() {
