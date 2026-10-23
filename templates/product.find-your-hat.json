@@ -11,8 +11,91 @@
   "sections": {
     "main": {
       "type": "hat-product-builder",
-      "settings": { "collection": "hats", "heading": "Find Your Hat", "color_scheme": "scheme-1" }
+      "blocks": {
+        "title": {
+          "type": "title",
+          "settings": {
+            "text": "",
+            "show_vendor": false,
+            "type_preset": "h2",
+            "alignment": "left",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {
+            "type_preset": "rte",
+            "alignment": "left",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          }
+        },
+        "variants": {
+          "type": "variants",
+          "settings": {
+            "image_width": 80,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          }
+        },
+        "globo_product_options_app_block_qaKGcM": {
+          "type": "shopify://apps/globo-product-options/blocks/app-block/fdc9fad5-1a0f-4bd4-9c8a-1af6a6eef6b8",
+          "settings": {
+            "product": "{{product}}"
+          }
+        },
+        "buy_buttons": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_icon": false,
+            "style_class": "button",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          }
+        },
+        "description": {
+          "type": "description",
+          "settings": {
+            "text": "",
+            "type_preset": "rte",
+            "alignment": "left",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          }
+        }
+      },
+      "block_order": [
+        "title",
+        "price",
+        "variants",
+        "globo_product_options_app_block_qaKGcM",
+        "buy_buttons",
+        "description"
+      ],
+      "settings": {
+        "collection": "hats",
+        "heading": "Find Your Hat",
+        "color_scheme": "scheme-2",
+        "show_product_choices": true,
+        "section_width": "page-width",
+        "padding_top": 48,
+        "padding_bottom": 48
+      }
     }
   },
-  "order": ["main"]
+  "order": [
+    "main"
+  ]
 }

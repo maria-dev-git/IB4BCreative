@@ -1,0 +1,107 @@
+{% doc %}
+  Renders merchant-ordered hat product details with dependent option controls.
+  @param {product} hat - Current panel product.
+  @param {variant} selected - Initial variant.
+  @param {string} section_id - Owning section ID.
+  @param {string} form_id - Unique product form ID.
+  @param {string} add_text - Translated initial purchase label.
+  @param {object} detail_blocks - Section detail blocks.
+  @example
+  {% render 'hat-product-details', hat: product, selected: product.selected_or_first_available_variant, section_id: section.id, form_id: 'HatForm', add_text: 'Add to cart', detail_blocks: section.blocks %}
+{% enddoc %}
+{% liquid
+  assign items = detail_blocks
+  if items == blank
+    assign items = 'title,price,variants,buy_buttons,description' | split: ','
+  endif
+%}
+      <select data-variants name="id" form="{{ form_id }}" aria-label="{{ 'actions.show_all_options' | t | escape }}">
+        {% for variant in hat.variants %}
+          <option value="{{ variant.id }}" data-values="{{ variant.options | json | escape }}" data-available="{{ variant.available }}" data-image="{{ variant.featured_image.id | default: hat.featured_image.id }}" data-price="{{ variant.price | money_with_currency | escape }}" data-min="{{ variant.quantity_rule.min }}" data-increment="{{ variant.quantity_rule.increment }}" {% if variant.quantity_rule.max %}data-max="{{ variant.quantity_rule.max }}"{% endif %} {% if variant.id == selected.id %}selected{% endif %}>{{ variant.title | escape }}</option>
+        {% endfor %}
+      </select>
+{% for block in items %}
+  {% assign detail_type = block.type | default: block %}
+  <div class="hat-builder__detail spacing-style" style="{% render 'spacing-style', settings: block.settings %} --hat-block-alignment: {{ block.settings.alignment | default: 'start' }}; --hat-option-image-width: {{ block.settings.image_width | default: 80 }}px;" {{ block.shopify_attributes }}>
+    {% case detail_type %}
+      {% when '@app' %}
+        {% render block %}
+      {% when 'title' %}
+        {% if block.settings.show_vendor and hat.vendor != blank %}<p>{{ hat.vendor | escape }}</p>{% endif %}
+        <h2 class="{{ block.settings.type_preset | default: 'h2' }}">{{ block.settings.text | default: hat.title | escape }}</h2>
+      {% when 'price' %}
+        <p class="{{ block.settings.type_preset | default: 'paragraph' }}" data-price>{{ selected.price | money_with_currency }}</p>
+      {% when 'variants' %}
+      {% assign option_sizes = block.settings.image_width | default: 80 | append: 'px' %}
+      <div class="hat-builder__options" data-options hidden on:change="/chooseOption">
+        {% for option in hat.options_with_values %}
+          {% assign option_index = forloop.index0 %}
+          <fieldset class="hat-builder__field" data-option-field data-option-index="{{ option_index }}" data-option-name="{{ option.name | escape }}">
+            <legend>{{ option.name | escape }}</legend>
+            <div class="hat-builder__option-list">
+              {% for value in option.values %}
+                {% liquid
+                  assign option_value = value.name | default: value
+                  assign option_image = hat.featured_image
+                  for variant in hat.variants
+                    if variant.options[option_index] == option_value
+                      assign option_image = variant.featured_image | default: hat.featured_image
+                      break
+                    endif
+                  endfor
+                %}
+                <label class="hat-builder__option" data-option-choice>
+                  <input class="hat-builder__radio" type="radio" name="HatOption-{{ section_id }}-{{ hat.id }}-{{ option.position }}" value="{{ option_value | escape }}" data-option-index="{{ option_index }}" {% if selected.options[option_index] == option_value %}checked{% endif %}>
+                  <span class="hat-builder__option-card">
+                    {% if option_image %}
+                      {{ option_image | image_url: width: 240 | image_tag: widths: '80, 160, 240', sizes: option_sizes, loading: 'lazy', alt: '' }}
+                    {% endif %}
+                    <span>{{ option_value | escape }}</span>
+                  </span>
+                </label>
+              {% endfor %}
+            </div>
+          </fieldset>
+        {% endfor %}
+      </div>
+
+
+      {% when 'buy_buttons' %}
+      <product-form-component data-section-id="{{ section_id }}" data-product-id="{{ hat.id }}" data-product-url="{{ hat.url }}" data-quantity-default="{{ selected.quantity_rule.min }}" on:submit="/handleSubmit">
+        <div class="visually-hidden" aria-live="assertive" role="status" aria-atomic="true" ref="liveRegion"></div>
+        {% form 'product', hat, id: form_id, data-type: 'add-to-cart-form' %}
+          <input type="hidden" name="id" ref="variantId" value="{{ selected.id }}" disabled>
+          <input type="hidden" name="quantity" value="{{ selected.quantity_rule.min }}">
+          <span class="hidden" ref="addToCartTextError"><span></span><span></span></span>
+          {% render 'add-to-cart-button', product: hat, can_add_to_cart: selected.available, add_to_cart_text: add_text, show_icon: block.settings.show_icon, class: block.settings.style_class %}
+        {% endform %}
+      </product-form-component>
+
+      {% when 'description' %}
+        {% assign description = block.settings.text | default: hat.description %}
+        {% if description != blank %}<div class="rte text-block {{ block.settings.type_preset | default: 'rte' }}">{{ description }}</div>{% endif %}
+      {% when 'text' %}
+        {% if block.settings.text != blank %}<div class="rte text-block {{ block.settings.type_preset | default: 'rte' }}">{{ block.settings.text }}</div>{% endif %}
+      {% when 'image' %}
+        {% if block.settings.image != blank %}
+          {% assign image_alt = block.settings.image.alt | default: hat.title %}
+          {% if block.settings.link != blank %}<a href="{{ block.settings.link | escape }}">{% endif %}
+            {{ block.settings.image | image_url: width: 1200 | image_tag: widths: '320, 600, 900, 1200', sizes: '(min-width: 750px) 50vw, 100vw', loading: 'lazy', alt: image_alt }}
+          {% if block.settings.link != blank %}</a>{% endif %}
+        {% endif %}
+      {% when 'button' %}
+        {% if block.settings.label != blank and block.settings.link != blank %}
+          {% render 'button', block: block, link: block.settings.link %}
+        {% endif %}
+      {% when 'accordion' %}
+        {% if block.settings.heading != blank and block.settings.text != blank %}
+          <details class="hat-builder__accordion">
+            <summary>{{ block.settings.heading | escape }}</summary>
+            <div class="rte">{{ block.settings.text }}</div>
+          </details>
+        {% endif %}
+      {% when 'divider' %}
+        <hr>
+    {% endcase %}
+  </div>
+{% endfor %}

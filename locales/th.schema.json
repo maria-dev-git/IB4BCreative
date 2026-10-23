@@ -8,6 +8,22 @@
  * ------------------------------------------------------------
  */
 {
+  "hat_builder": {
+  "title_content_help": "Leave blank to use each hat’s product title. Enter text to override it in this block.",
+  "description_content_help": "Leave blank to use each hat’s product description. Enter text to override it in this block.",
+  "show_product_choices": "Show hat style choices",
+  "page_width": "Page width",
+  "full_width": "Full width",
+  "title": "Product title",
+  "show_vendor": "Show vendor",
+  "price": "Price",
+  "variants": "Variant picker",
+  "variant_help": "Options use variant images. Panel count is shown first; only in-stock colors for the selected panel count are displayed.",
+  "buy_buttons": "Buy button",
+  "show_icon": "Show cart icon",
+  "description": "Product description",
+  "text": "Custom text"
+},
   "names": {
     "find_your_hat": "Find Your Hat",
     "image_product_list": "รูปภาพพร้อมสินค้า",

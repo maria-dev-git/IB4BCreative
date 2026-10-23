@@ -3,6 +3,7 @@
   @param {product} hat - Collection product.
   @param {product} initial_product - Initially visible product.
   @param {string} section_id - Owning section's unique ID.
+  @param {object} detail_blocks - Merchant-ordered section detail blocks.
   @example
   {% render 'hat-product-panel', hat: product, initial_product: product, section_id: section.id %}
 {% enddoc %}
@@ -36,31 +37,7 @@
       {% endif %}
     </div>
     <div class="hat-builder__details">
-      <h2>{{ hat.title | escape }}</h2>
-      <p data-price>{{ selected.price | money_with_currency }}</p>
-      <div class="hat-builder__options" data-options hidden on:change="/chooseOption">
-        {% for option in hat.options_with_values %}
-          <div class="hat-builder__field" data-option-field data-option-name="{{ option.name | escape }}">
-            <label for="HatOption-{{ section_id }}-{{ hat.id }}-{{ option.position }}">{{ option.name | escape }}</label>
-            <select id="HatOption-{{ section_id }}-{{ hat.id }}-{{ option.position }}" data-option-index="{{ forloop.index0 }}"></select>
-          </div>
-        {% endfor %}
-      </div>
-      <select data-variants name="id" form="{{ form_id }}" aria-label="{{ 'actions.show_all_options' | t | escape }}">
-        {% for variant in hat.variants %}
-          <option value="{{ variant.id }}" data-values="{{ variant.options | json | escape }}" data-available="{{ variant.available }}" data-image="{{ variant.featured_image.id | default: hat.featured_image.id }}" data-price="{{ variant.price | money_with_currency | escape }}" data-min="{{ variant.quantity_rule.min }}" data-increment="{{ variant.quantity_rule.increment }}" {% if variant.quantity_rule.max %}data-max="{{ variant.quantity_rule.max }}"{% endif %} {% if variant.id == selected.id %}selected{% endif %}>{{ variant.title | escape }}</option>
-        {% endfor %}
-      </select>
-      <product-form-component data-section-id="{{ section_id }}" data-product-id="{{ hat.id }}" data-product-url="{{ hat.url }}" data-quantity-default="{{ selected.quantity_rule.min }}" on:submit="/handleSubmit">
-        <div class="visually-hidden" aria-live="assertive" role="status" aria-atomic="true" ref="liveRegion"></div>
-        {% form 'product', hat, id: form_id, data-type: 'add-to-cart-form' %}
-          <input type="hidden" name="id" ref="variantId" value="{{ selected.id }}" disabled>
-          <input type="hidden" name="quantity" value="{{ selected.quantity_rule.min }}">
-          <span class="hidden" ref="addToCartTextError"><span></span><span></span></span>
-          {% render 'add-to-cart-button', product: hat, can_add_to_cart: selected.available, add_to_cart_text: add_text, show_icon: false %}
-        {% endform %}
-      </product-form-component>
-      {% if hat.description != blank %}<div class="rte">{{ hat.description }}</div>{% endif %}
+      {% render 'hat-product-details', hat: hat, selected: selected, section_id: section_id, form_id: form_id, add_text: add_text, detail_blocks: detail_blocks %}
     </div>
   </div>
 {% endif %}

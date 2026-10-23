@@ -16,12 +16,11 @@ class HatProductBuilder extends Component {
   #initialize() {
     for (const panel of this.querySelectorAll('[data-hat-panel]')) {
       const options = panel.querySelector('[data-options]');
-      if (!(options instanceof HTMLElement)) continue;
       // Panel Count always precedes Color, even when Shopify stores them in reverse order.
-      const fields = [...options.querySelectorAll('[data-option-field]')];
+      const fields = [...(options?.querySelectorAll('[data-option-field]') || [])];
       const rank = (field) => {
-        const name = field.dataset.optionName?.trim().toLowerCase();
-        return name === 'panel count' ? 0 : name === 'color' || name === 'colour' ? 1 : 2;
+        const name = field.dataset.optionName?.toLowerCase().replace(/[^a-z]/g, '');
+        return ['panel', 'panels', 'panelcount'].includes(name) ? 0 : name === 'color' || name === 'colour' ? 1 : 2;
       };
       fields.sort((a, b) => rank(a) - rank(b));
       for (const field of fields) options.append(field);
@@ -29,13 +28,13 @@ class HatProductBuilder extends Component {
       const source = panel.querySelector('[data-variants]');
       const selected = variants.find((variant) => variant.id === source?.value) || variants[0];
       if (!selected) continue;
-      this.#populate(panel, selected.values);
-      options.hidden = variants.length === 1 && selected.label === 'Default Title';
+      const resolved = options ? this.#populate(panel, selected.values) : selected;
+      if (options) options.hidden = variants.length === 1 && selected.label === 'Default Title';
       if (source instanceof HTMLSelectElement) {
         source.hidden = true;
         source.disabled = true;
       }
-      this.#apply(panel, selected, false);
+      this.#apply(panel, resolved || selected, false);
     }
   }
 
@@ -55,16 +54,31 @@ class HatProductBuilder extends Component {
 
   #populate(panel, desired) {
     let candidates = this.#variants(panel);
-    for (const select of panel.querySelectorAll('[data-options] select')) {
-      const index = Number(select.dataset.optionIndex);
-      const values = [...new Set(candidates.map((variant) => variant.values[index]))];
+    for (const field of panel.querySelectorAll('[data-option-field]')) {
+      const index = Number(field.dataset.optionIndex);
+      // Only offer purchasable combinations, narrowing Color after Panel Count.
+      const available = candidates.filter((variant) => variant.available);
+      const values = [...new Set(available.map((variant) => variant.values[index]))];
       const selected = values.includes(desired[index]) ? desired[index] :
-        (candidates.find((variant) => variant.available) || candidates[0])?.values[index];
-      select.replaceChildren(...values.map((value) => {
-        const option = new Option(value, value);
-        option.selected = value === selected;
-        return option;
-      }));
+        available[0]?.values[index];
+      for (const input of field.querySelectorAll('input[type="radio"]')) {
+        const visible = values.includes(input.value);
+        input.disabled = !visible;
+        input.checked = visible && input.value === selected;
+        const choice = input.closest('[data-option-choice]');
+        if (choice) choice.hidden = !visible;
+        // Color thumbnails come from the current panel-count combination.
+        const representative = available.find((variant) => variant.values[index] === input.value);
+        const image = choice?.querySelector('img');
+        const galleryImage = representative && [...panel.querySelectorAll('[data-image]')]
+          .find((item) => item.dataset.image === representative.image)?.querySelector('img');
+        if (image && galleryImage) {
+          const url = new URL(galleryImage.src);
+          url.searchParams.set('width', '240');
+          image.removeAttribute('srcset');
+          image.src = url.href;
+        }
+      }
       candidates = candidates.filter((variant) => variant.values[index] === selected);
     }
     return candidates.find((variant) => variant.available) || candidates[0];
@@ -76,6 +90,8 @@ class HatProductBuilder extends Component {
     if (!(event.target instanceof Element)) return;
     const choice = event.target.closest('[data-product-choice]');
     if (!choice) return;
+    // With app blocks, only the page product is rendered. Other choices follow
+    // their native links so apps initialize with the new product's Liquid context.
     const panel = [...this.querySelectorAll('[data-hat-panel]')].find((item) => item.dataset.hatPanel === choice.dataset.productChoice);
     if (!panel) return;
     event.preventDefault();
@@ -91,29 +107,39 @@ class HatProductBuilder extends Component {
 
   /** @param {Event} event - A Panel Count or Color change. */
   chooseOption(event) {
-    if (!(event.target instanceof HTMLSelectElement)) return;
+    if (!(event.target instanceof HTMLInputElement) || event.target.type !== 'radio') return;
     const panel = event.target.closest('[data-hat-panel]');
     if (!panel) return;
     const desired = [];
-    for (const select of panel.querySelectorAll('[data-options] select')) desired[Number(select.dataset.optionIndex)] = select.value;
+    for (const input of panel.querySelectorAll('[data-options] input:checked')) desired[Number(input.dataset.optionIndex)] = input.value;
     const selected = this.#populate(panel, desired);
     if (selected) this.#apply(panel, selected, true);
   }
 
   #apply(panel, variant, announce) {
-    const input = panel.querySelector('input[name="id"]');
-    const quantity = panel.querySelector('input[name="quantity"]');
     const form = panel.querySelector('product-form-component');
+    // App blocks can add their own inputs before the buy button. Update only
+    // the theme form's canonical fields, then notify delegated app listeners.
+    const input = form?.querySelector('input[ref="variantId"]');
+    const quantity = form?.querySelector('input[name="quantity"]');
     const source = panel.querySelector('[data-variants]');
     const price = panel.querySelector('[data-price]');
     const button = panel.querySelector('button[name="add"]');
+    const previousVariantId = input?.value;
     if (input instanceof HTMLInputElement) {
       input.value = variant.id;
+      input.setAttribute('value', variant.id);
       input.disabled = false;
     }
     if (quantity instanceof HTMLInputElement) quantity.value = variant.min;
     if (form instanceof HTMLElement) form.dataset.quantityDefault = variant.min;
-    if (source instanceof HTMLSelectElement) source.value = variant.id;
+    if (source instanceof HTMLSelectElement) {
+      source.value = variant.id;
+      for (const option of source.options) {
+        option.selected = option.value === variant.id;
+        option.toggleAttribute('selected', option.selected);
+      }
+    }
     if (price) price.textContent = variant.price;
     if (button instanceof HTMLButtonElement) {
       button.disabled = !variant.available;
@@ -133,6 +159,9 @@ class HatProductBuilder extends Component {
       url.searchParams.set('view', 'find-your-hat');
       url.searchParams.set('variant', variant.id);
       window.history.replaceState({}, '', url);
+    }
+    if (input instanceof HTMLInputElement && previousVariantId !== variant.id) {
+      input.dispatchEvent(new Event('change', { bubbles: true }));
     }
   }
 
