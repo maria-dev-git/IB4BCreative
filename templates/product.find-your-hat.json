@@ -12,6 +12,17 @@
     "main": {
       "type": "hat-product-builder",
       "blocks": {
+        "product_choices": {
+          "type": "product_choices",
+          "settings": {
+            "heading": "Hat Style",
+            "alignment": "center",
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          }
+        },
         "title": {
           "type": "title",
           "settings": {
@@ -39,7 +50,9 @@
         "variants": {
           "type": "variants",
           "settings": {
-            "image_width": 80,
+            "image_width": 100,
+            "thumbnail_border_color": "",
+            "thumbnail_hover_border_color": "{{ settings.color_palette.color1 }}",
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,
@@ -77,6 +90,7 @@
         }
       },
       "block_order": [
+        "product_choices",
         "title",
         "price",
         "variants",

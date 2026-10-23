@@ -9,6 +9,9 @@
  */
 {
   "hat_builder": {
+  "thumbnail_width": "Thumbnail width",
+  "thumbnail_border_color": "Thumbnail border color",
+  "product_choices": "Hat style choices",
   "title_content_help": "Leave blank to use each hat’s product title. Enter text to override it in this block.",
   "description_content_help": "Leave blank to use each hat’s product description. Enter text to override it in this block.",
   "show_product_choices": "Show hat style choices",

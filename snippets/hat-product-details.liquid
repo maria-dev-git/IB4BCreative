@@ -22,7 +22,8 @@
       </select>
 {% for block in items %}
   {% assign detail_type = block.type | default: block %}
-  <div class="hat-builder__detail spacing-style" style="{% render 'spacing-style', settings: block.settings %} --hat-block-alignment: {{ block.settings.alignment | default: 'start' }}; --hat-option-image-width: {{ block.settings.image_width | default: 80 }}px;" {{ block.shopify_attributes }}>
+  {% if detail_type == 'product_choices' %}{% continue %}{% endif %}
+  <div class="hat-builder__detail spacing-style" style="{% render 'spacing-style', settings: block.settings %} --hat-block-alignment: {{ block.settings.alignment | default: 'start' }}; --hat-option-image-width: {{ block.settings.image_width | default: 80 }}px; {% if block.settings.thumbnail_border_color != blank %}--hat-thumbnail-border: {{ block.settings.thumbnail_border_color }};{% endif %}" {{ block.shopify_attributes }}>
     {% case detail_type %}
       {% when '@app' %}
         {% render block %}
@@ -69,8 +70,9 @@
       {% when 'buy_buttons' %}
       <product-form-component data-section-id="{{ section_id }}" data-product-id="{{ hat.id }}" data-product-url="{{ hat.url }}" data-quantity-default="{{ selected.quantity_rule.min }}" on:submit="/handleSubmit">
         <div class="visually-hidden" aria-live="assertive" role="status" aria-atomic="true" ref="liveRegion"></div>
-        {% form 'product', hat, id: form_id, data-type: 'add-to-cart-form' %}
-          <input type="hidden" name="id" ref="variantId" value="{{ selected.id }}" disabled>
+        {% form 'product', hat, id: form_id, data-type: 'add-to-cart-form', data-gpo-product-form: 'true' %}
+          {% comment %} Globo's Horizon adapter needs this hook for custom product layouts. {% endcomment %}
+          <input type="hidden" name="id" ref="variantId" data-gpo-product-variant-selector value="{{ selected.id }}" disabled>
           <input type="hidden" name="quantity" value="{{ selected.quantity_rule.min }}">
           <span class="hidden" ref="addToCartTextError"><span></span><span></span></span>
           {% render 'add-to-cart-button', product: hat, can_add_to_cart: selected.available, add_to_cart_text: add_text, show_icon: block.settings.show_icon, class: block.settings.style_class %}

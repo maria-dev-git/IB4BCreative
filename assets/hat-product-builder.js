@@ -87,8 +87,9 @@ class HatProductBuilder extends Component {
   /** @param {MouseEvent} event - A product card activation. */
   chooseProduct(event) {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-    if (!(event.target instanceof Element)) return;
-    const choice = event.target.closest('[data-product-choice]');
+    const target = event.composedPath()[0];
+    if (!(target instanceof Element)) return;
+    const choice = target.closest('[data-product-choice]');
     if (!choice) return;
     // With app blocks, only the page product is rendered. Other choices follow
     // their native links so apps initialize with the new product's Liquid context.
@@ -107,8 +108,11 @@ class HatProductBuilder extends Component {
 
   /** @param {Event} event - A Panel Count or Color change. */
   chooseOption(event) {
-    if (!(event.target instanceof HTMLInputElement) || event.target.type !== 'radio') return;
-    const panel = event.target.closest('[data-hat-panel]');
+    // Declarative events proxy target to the on:change container; the composed
+    // path retains the actual input that initiated the change.
+    const target = event.composedPath()[0];
+    if (!(target instanceof HTMLInputElement) || target.type !== 'radio') return;
+    const panel = target.closest('[data-hat-panel]');
     if (!panel) return;
     const desired = [];
     for (const input of panel.querySelectorAll('[data-options] input:checked')) desired[Number(input.dataset.optionIndex)] = input.value;
@@ -167,8 +171,9 @@ class HatProductBuilder extends Component {
 
   /** @param {MouseEvent} event - A gallery thumbnail activation. */
   chooseImage(event) {
-    if (!(event.target instanceof Element)) return;
-    const button = event.target.closest('[data-image-choice]');
+    const target = event.composedPath()[0];
+    if (!(target instanceof Element)) return;
+    const button = target.closest('[data-image-choice]');
     const panel = button?.closest('[data-hat-panel]');
     if (panel) this.#showImage(panel, button.dataset.imageChoice);
   }

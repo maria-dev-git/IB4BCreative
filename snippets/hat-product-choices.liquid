@@ -1,0 +1,31 @@
+{% doc %}
+  Renders the collection's hat-style choices using their dedicated section block.
+  @param {collection} hats - Collection supplying the choices.
+  @param {product} initial_product - Product currently shown.
+  @param {object} block - Product choices block and its editor settings.
+  @example
+  {% render 'hat-product-choices', hats: section.settings.collection, initial_product: product, block: block %}
+{% enddoc %}
+<div class="hat-builder__product-choices spacing-style" style="{% render 'spacing-style', settings: block.settings %} --hat-choices-alignment: {{ block.settings.alignment | default: 'flex-start' }};" {{ block.shopify_attributes }}>
+  {% if block.settings.heading != blank %}
+    <h2 class="hat-builder__choices-heading">{{ block.settings.heading | escape }}</h2>
+  {% endif %}
+  <nav class="hat-builder__products" aria-label="{{ 'hat_finder.style' | t | escape }}" on:click="/chooseProduct">
+    {% for hat in hats.products %}
+      <a class="hat-builder__choice" href="{{ hat.url }}?view=find-your-hat" data-product-choice="{{ hat.id }}" {% if hat.id == initial_product.id %}aria-current="true"{% endif %}>
+        {% if hat.featured_image %}{{ hat.featured_image | image_url: width: 320 | image_tag: widths: '120, 240, 320', sizes: '160px', loading: 'lazy', alt: '' }}{% endif %}
+        <span>{{ hat.title | escape }}</span>
+      </a>
+    {% endfor %}
+  </nav>
+</div>
+{% stylesheet %}
+  .hat-builder__product-choices { min-inline-size: 0; }
+  .hat-builder__choices-heading { display: flex; justify-content: var(--hat-choices-alignment); overflow-wrap: anywhere; }
+  .hat-builder__products { display: flex; flex-wrap: wrap; justify-content: var(--hat-choices-alignment); gap: var(--gap-md); margin-block: var(--margin-xl); }
+  .hat-builder__choice { display: grid; align-content: start; gap: var(--gap-sm); flex: 1 1 140px; max-inline-size: 240px; padding: var(--padding-sm); border: 1px solid var(--color-border); color: inherit; text-decoration: none; overflow-wrap: anywhere; }
+  .hat-builder__choice[aria-current] { 
+       outline: 2px solid var(--color-foreground);
+  }
+  .hat-builder__choice img { inline-size: 100%; aspect-ratio: 1; object-fit: contain; }
+{% endstylesheet %}
