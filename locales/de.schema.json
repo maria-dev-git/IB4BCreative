@@ -8,6 +8,17 @@
  * ------------------------------------------------------------
  */
 {
+  "mobile_image_text": {
+    "overlay_color": "Mobile image overlay color",
+    "overlay_opacity": "Mobile image overlay opacity",
+    "text_color": "Mobile overlay text color",
+  "name": "Image with text overlay",
+  "mobile_layout": "Mobile layout",
+  "enable_overlay": "Place text on image on mobile",
+  "horizontal_position": "Mobile text horizontal position",
+  "vertical_position": "Mobile text vertical position",
+  "edge_spacing": "Mobile text edge spacing"
+},
   "hat_builder": {
     "thumbnail_enlargement_mobile": "Globo thumbnail enlargement — mobile",
     "thumbnail_enlargement_mobile_help": "Used below 750px. The enlarged image shifts inward and fits within the screen when needed.",

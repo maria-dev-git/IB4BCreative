@@ -132,7 +132,7 @@
       ],
       "settings": {
         "collection": "hats",
-        "heading": "Build Yyour Own Hat",
+        "heading": "Build Your Own Hat",
         "type_preset": "h1",
         "font": "var(--font-body--family)",
         "weight": "",
