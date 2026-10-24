@@ -9,6 +9,11 @@
  */
 {
   "hat_builder": {
+    "thumbnail_enlargement_mobile": "Globo thumbnail enlargement — mobile",
+    "thumbnail_enlargement_mobile_help": "Used below 750px. The enlarged image shifts inward and fits within the screen when needed.",
+    "thumbnail_enlargement": "Globo thumbnail enlargement",
+    "thumbnail_enlargement_help": "Applies on hover, touch, and keyboard focus. 100% keeps the original size.",
+    "mobile_font_size": "Mobile font size",
   "thumbnail_width": "Thumbnail width",
   "thumbnail_border_color": "Thumbnail border color",
   "product_choices": "Hat style choices",

@@ -9,6 +9,7 @@
  */
 {
   "hat_finder": {
+    "total_price_breakdown": "Total price: {{ total }} ({{ base }} + {{ addon }})",
     "style": "Hat Style",
     "color": "Color",
     "patch": "Patch",

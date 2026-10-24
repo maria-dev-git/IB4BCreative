@@ -29,9 +29,9 @@
         {% render block %}
       {% when 'title' %}
         {% if block.settings.show_vendor and hat.vendor != blank %}<p>{{ hat.vendor | escape }}</p>{% endif %}
-        <h2 class="{{ block.settings.type_preset | default: 'h2' }}">{{ block.settings.text | default: hat.title | escape }}</h2>
+        <h2 class="{{ block.settings.type_preset | default: 'h2' }}{% if block.settings.type_preset == 'custom' %} custom-typography custom-font-size hat-custom-typography{% endif %}" style="{% render 'hat-typography-style', settings: block.settings %}">{{ block.settings.text | default: hat.title | escape }}</h2>
       {% when 'price' %}
-        <p class="{{ block.settings.type_preset | default: 'paragraph' }}" data-price>{{ selected.price | money_with_currency }}</p>
+        <p class="{{ block.settings.type_preset | default: 'paragraph' }}{% if block.settings.type_preset == 'custom' %} custom-typography custom-font-size hat-custom-typography{% endif %}" style="{% render 'hat-typography-style', settings: block.settings %}" data-price>{{ selected.price | money_with_currency }}</p>
       {% when 'variants' %}
       {% assign option_sizes = block.settings.image_width | default: 80 | append: 'px' %}
       <div class="hat-builder__options" data-options hidden on:change="/chooseOption">
@@ -81,9 +81,9 @@
 
       {% when 'description' %}
         {% assign description = block.settings.text | default: hat.description %}
-        {% if description != blank %}<div class="rte text-block {{ block.settings.type_preset | default: 'rte' }}">{{ description }}</div>{% endif %}
+        {% if description != blank %}<div class="rte text-block {{ block.settings.type_preset | default: 'rte' }}{% if block.settings.type_preset == 'custom' %} custom-typography custom-font-size hat-custom-typography{% endif %}" style="{% render 'hat-typography-style', settings: block.settings %}">{{ description }}</div>{% endif %}
       {% when 'text' %}
-        {% if block.settings.text != blank %}<div class="rte text-block {{ block.settings.type_preset | default: 'rte' }}">{{ block.settings.text }}</div>{% endif %}
+        {% if block.settings.text != blank %}<div class="rte text-block {{ block.settings.type_preset | default: 'rte' }}{% if block.settings.type_preset == 'custom' %} custom-typography custom-font-size hat-custom-typography{% endif %}" style="{% render 'hat-typography-style', settings: block.settings %}">{{ block.settings.text }}</div>{% endif %}
       {% when 'image' %}
         {% if block.settings.image != blank %}
           {% assign image_alt = block.settings.image.alt | default: hat.title %}

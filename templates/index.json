@@ -89,7 +89,6 @@
         "text_93A7F4",
         "button_H9gpTf"
       ],
-      "disabled": true,
       "name": "t:names.hero",
       "settings": {
         "use_color_scheme": false,
@@ -512,7 +511,7 @@
               "settings": {
                 "image_ratio": "adapt",
                 "toggle_overlay": true,
-                "overlay_color": "#0000004f",
+                "overlay_color": "#0000008f",
                 "overlay_style": "solid",
                 "gradient_direction": "to top",
                 "border": "none",
@@ -1031,7 +1030,7 @@
                   "type": "text",
                   "name": "t:names.text",
                   "settings": {
-                    "text": "<p>Infantry Brothers Clothing is made by those who've stood the line, carried the ruck,and lived the grind. We aren't outsiders copying a culture — we're the men who camefrom it. Every product. every design, every detail is driven by real experience. notimagination.This isn't \"military-inspired.\" It's military-built — straight from the source.</p>",
+                    "text": "<p>Infantry Brothers Clothing is made by those who've stood the line, carried the ruck, and lived the grind. We aren't outsiders copying a culture—we're the men who came from it.<br/>Every product, every design, every detail is driven by real experience, not imagination. This isn't \"military-inspired\". It's military-build—straight from the source.</p>",
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",
@@ -1143,7 +1142,7 @@
                   "type": "text",
                   "name": "t:names.text",
                   "settings": {
-                    "text": "<p>Our gear is built for real use, real environments, and real people. Every shirt, hoodie,hat, and piece Of apparel is made from tough materials and locked in with clean,disciplined construction that doesn't quit. No shortcuts. No excuses. Justhard-wearing gear that keeps pushing as long as you do.</p>",
+                    "text": "<p>Our gear is built for real use, real environments, and real people. Every shirt, hoodie, hat, and piece of apparel is made from tough materials and locked-in with clean, disciplined construction that doesn't quit. No shortcuts. No excuses. Just hard-wearing gear that<br/>keeps pushing as long as you do.</p>",
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",
@@ -1255,7 +1254,7 @@
                   "type": "text",
                   "name": "t:names.text",
                   "settings": {
-                    "text": "<p>Our apparel honors the stories of service, the weight of sacrifice, and the true cost of freedom. We stand with every brother and sister still fighting the quiet battles long after the uniform comes off. Every purchase fuels veteran support and mental-health initiatives — turning apparel into impact.</p>",
+                    "text": "<p>Our apparel honors the stories of stories of service, the weight of sacrifice, and the true cost of freedom. We stand with every brother and sister still fighting the quiet battles long after the uniform comes off. Every purchase fuels veteran support and mental-health initiatives—turning apparel into impact.</p>",
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",

@@ -1,0 +1,10 @@
+{% doc %}
+  Sets custom typography variables and an optional mobile size for hat builder text.
+  @param {object} settings - Section or block typography settings.
+  @example
+  <h2 style="{% render 'hat-typography-style', settings: block.settings %}">Heading</h2>
+{% enddoc %}
+{% render 'typography-style', settings: settings %}
+{% if settings.type_preset == 'custom' and settings.font_size_mobile != blank %}
+  --hat-font-size-mobile: {{ settings.font_size_mobile }};
+{% endif %}
