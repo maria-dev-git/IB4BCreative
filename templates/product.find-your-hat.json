@@ -219,7 +219,7 @@
         "product_choices": {
           "type": "product_choices",
           "settings": {
-            "heading": "Choose your Style",
+            "heading": "Choose Your Hat Style",
             "type_preset": "h3",
             "font": "var(--font-body--family)",
             "weight": "",

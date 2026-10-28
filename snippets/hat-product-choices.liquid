@@ -10,7 +10,7 @@
   {% if block.settings.heading != blank %}
     <h2 class="hat-builder__choices-heading {{ block.settings.type_preset | default: 'h2' }}{% if block.settings.type_preset == 'custom' %} custom-typography custom-font-size hat-custom-typography{% endif %}" style="{% render 'hat-typography-style', settings: block.settings %}">{{ block.settings.heading | escape }}</h2>
   {% endif %}
-  <nav class="hat-builder__products" aria-label="{{ 'hat_finder.style' | t | escape }}" on:click="/chooseProduct">
+  <nav class="hat-builder__products" aria-label="{{ 'hat_finder.style' | t | escape }}">
     {% for hat in hats.products %}
       <a class="hat-builder__choice" href="{{ hat.url }}?view=find-your-hat" data-product-choice="{{ hat.id }}" {% if hat.id == initial_product.id %}aria-current="true"{% endif %}>
         {% if hat.featured_image %}{{ hat.featured_image | image_url: width: 320 | image_tag: widths: '120, 240, 320', sizes: '160px', loading: 'lazy', alt: '' }}{% endif %}

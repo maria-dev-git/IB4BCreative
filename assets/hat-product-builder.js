@@ -6,6 +6,8 @@ import { convertMoneyToMinorUnits, formatMoney } from '@theme/money-formatting';
 class HatProductBuilder extends Component {
   /** @type {AbortController | undefined} */
   #globoListeners;
+  /** @type {AbortController | undefined} */
+  #productRequest;
   #updatingGlobo = false;
   /** @type {Element | undefined} */
   #touchedSwatch;
@@ -22,6 +24,7 @@ class HatProductBuilder extends Component {
     this.#globoListeners = new AbortController();
     // Globo also emits non-bubbling change events; capture reaches those inputs.
     this.addEventListener('change', this.#onGloboChange, { capture: true, signal: this.#globoListeners.signal });
+    this.addEventListener('click', this.#onProductChoice, { signal: this.#globoListeners.signal });
     this.addEventListener('pointerdown', this.#onThumbnailTouch, { signal: this.#globoListeners.signal });
     this.addEventListener('focusin', this.#onThumbnailFocus, { signal: this.#globoListeners.signal });
     this.addEventListener('focusout', this.#clearThumbnailTouch, { signal: this.#globoListeners.signal });
@@ -264,17 +267,19 @@ class HatProductBuilder extends Component {
   }
 
   /** @param {MouseEvent} event - A product card activation. */
-  chooseProduct(event) {
+  #onProductChoice = (event) => {
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     const target = event.composedPath()[0];
     if (!(target instanceof Element)) return;
     const choice = target.closest('[data-product-choice]');
-    if (!choice) return;
-    // With app blocks, only the page product is rendered. Other choices follow
-    // their native links so apps initialize with the new product's Liquid context.
-    const panel = [...this.querySelectorAll('[data-hat-panel]')].find((item) => item.dataset.hatPanel === choice.dataset.productChoice);
-    if (!panel) return;
+    if (!(choice instanceof HTMLAnchorElement)) return;
     event.preventDefault();
+    const panel = [...this.querySelectorAll('[data-hat-panel]')].find((item) => item.dataset.hatPanel === choice.dataset.productChoice);
+    if (!panel) {
+      void this.#loadProductChoice(choice);
+      return;
+    }
+    this.#productRequest?.abort();
     for (const item of this.querySelectorAll('[data-hat-panel]')) item.hidden = item !== panel;
     for (const item of this.querySelectorAll('[data-product-choice]')) {
       if (item === choice) item.setAttribute('aria-current', 'true');
@@ -283,6 +288,50 @@ class HatProductBuilder extends Component {
     const source = panel.querySelector('[data-variants]');
     const selected = this.#variants(panel).find((variant) => variant.id === source?.value);
     if (selected) this.#apply(panel, selected, true);
+  };
+
+  /** Fetch a product-specific panel when app blocks limit the page to one hat.
+   * @param {HTMLAnchorElement} choice - The selected hat link.
+   */
+  async #loadProductChoice(choice) {
+    this.#productRequest?.abort();
+    const controller = new AbortController();
+    this.#productRequest = controller;
+    this.setAttribute('aria-busy', 'true');
+    try {
+      const response = await fetch(choice.href, { signal: controller.signal, credentials: 'same-origin' });
+      if (!response.ok) throw new Error(`Hat request failed: ${response.status}`);
+      const html = await response.text();
+      if (controller.signal.aborted) return;
+      const documentFromResponse = new DOMParser().parseFromString(html, 'text/html');
+      const productId = choice.dataset.productChoice;
+      const incoming = [...documentFromResponse.querySelectorAll('[data-hat-panel]')]
+        .find((item) => item.dataset.hatPanel === productId);
+      const current = this.querySelector('[data-hat-panel]');
+      if (!incoming || !current) throw new Error('Hat panel missing from response');
+      const panel = document.importNode(incoming, true);
+      current.replaceWith(panel);
+      this.#initialize();
+      for (const item of this.querySelectorAll('[data-product-choice]')) {
+        if (item === choice) item.setAttribute('aria-current', 'true');
+        else item.removeAttribute('aria-current');
+      }
+      const source = panel.querySelector('[data-variants]');
+      const selected = this.#variants(panel).find((variant) => variant.id === source?.value);
+      if (selected) this.#apply(panel, selected, true);
+      this.#prepareGloboThumbnails();
+      this.#enforceGloboChoice();
+      this.#updateGloboTotals();
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      // Keep a usable path if the background request fails.
+      window.location.assign(choice.href);
+    } finally {
+      if (this.#productRequest === controller) {
+        this.#productRequest = undefined;
+        this.removeAttribute('aria-busy');
+      }
+    }
   }
 
   /** @param {Event} event - A Panel Count or Color change. */
@@ -337,8 +386,6 @@ class HatProductBuilder extends Component {
       const status = this.querySelector('[data-selection-status]');
       if (status) status.textContent = `${panel.dataset.title}, ${variant.values.join(', ')}, ${variant.price}, ${variant.available ? this.dataset.add : this.dataset.sold}`;
       const url = new URL(window.location.href);
-      const productUrl = form?.dataset.productUrl;
-      if (productUrl) url.pathname = new URL(productUrl, window.location.origin).pathname;
       url.searchParams.set('view', 'find-your-hat');
       url.searchParams.set('variant', variant.id);
       window.history.replaceState({}, '', url);
