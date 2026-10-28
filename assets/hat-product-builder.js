@@ -1,13 +1,15 @@
 import { Component } from '@theme/component';
 import '@theme/product-form';
 import { convertMoneyToMinorUnits, formatMoney } from '@theme/money-formatting';
+import { getScrollContainer, getScrollTop } from '@theme/scroll-container';
 
-/** Collection product and variant selection with no section fetches or page replacement. */
+/** Hat product selection, native product navigation, and in-page variant controls. */
 class HatProductBuilder extends Component {
   /** @type {AbortController | undefined} */
   #globoListeners;
-  /** @type {AbortController | undefined} */
-  #productRequest;
+  #scrollStorageKey = 'hat-builder-scroll-position';
+  /** @type {(() => void) | undefined} */
+  #scrollRestoreCleanup;
   #updatingGlobo = false;
   /** @type {Element | undefined} */
   #touchedSwatch;
@@ -15,6 +17,7 @@ class HatProductBuilder extends Component {
     this.#prepareGloboThumbnails();
     this.#enforceGloboChoice();
     this.#updateGloboTotals();
+    this.#restoreScrollAfterGlobo();
   });
 
   connectedCallback() {
@@ -25,6 +28,8 @@ class HatProductBuilder extends Component {
     // Globo also emits non-bubbling change events; capture reaches those inputs.
     this.addEventListener('change', this.#onGloboChange, { capture: true, signal: this.#globoListeners.signal });
     this.addEventListener('click', this.#onProductChoice, { signal: this.#globoListeners.signal });
+    this.addEventListener('pointerover', this.#prefetchProductChoice, { signal: this.#globoListeners.signal });
+    this.addEventListener('focusin', this.#prefetchProductChoice, { signal: this.#globoListeners.signal });
     this.addEventListener('pointerdown', this.#onThumbnailTouch, { signal: this.#globoListeners.signal });
     this.addEventListener('focusin', this.#onThumbnailFocus, { signal: this.#globoListeners.signal });
     this.addEventListener('focusout', this.#clearThumbnailTouch, { signal: this.#globoListeners.signal });
@@ -46,6 +51,7 @@ class HatProductBuilder extends Component {
   }
 
   disconnectedCallback() {
+    this.#scrollRestoreCleanup?.();
     this.#globoListeners?.abort();
     this.#globoObserver.disconnect();
     this.#clearThumbnailTouch();
@@ -273,88 +279,90 @@ class HatProductBuilder extends Component {
     if (!(target instanceof Element)) return;
     const choice = target.closest('[data-product-choice]');
     if (!(choice instanceof HTMLAnchorElement)) return;
-    event.preventDefault();
-    const panel = [...this.querySelectorAll('[data-hat-panel]')].find((item) => item.dataset.hatPanel === choice.dataset.productChoice);
-    if (!panel) {
-      void this.#loadProductChoice(choice);
+    const activePanel = this.querySelector('[data-hat-panel]:not([hidden])');
+    if (activePanel?.dataset.hatPanel === choice.dataset.productChoice) {
+      event.preventDefault();
       return;
     }
-    this.#productRequest?.abort();
-    for (const item of this.querySelectorAll('[data-hat-panel]')) item.hidden = item !== panel;
-    for (const item of this.querySelectorAll('[data-product-choice]')) {
-      if (item === choice) item.setAttribute('aria-current', 'true');
-      else item.removeAttribute('aria-current');
+    const scrollContainer = getScrollContainer();
+    try {
+      sessionStorage.setItem(this.#scrollStorageKey, JSON.stringify({
+        path: new URL(choice.href).pathname,
+        x: scrollContainer.scrollLeft,
+        y: getScrollTop(),
+      }));
+    } catch {
+      // Keep the product link working if session storage is unavailable.
     }
-    const source = panel.querySelector('[data-variants]');
-    const selected = this.#variants(panel).find((variant) => variant.id === source?.value);
-    if (selected) this.#apply(panel, selected, true);
   };
 
-  /** Fetch a product-specific panel when app blocks limit the page to one hat.
-   * @param {HTMLAnchorElement} choice - The selected hat link.
-   */
-  async #loadProductChoice(choice) {
-    this.#productRequest?.abort();
-    const controller = new AbortController();
-    this.#productRequest = controller;
-    this.setAttribute('aria-busy', 'true');
-    try {
-      const response = await fetch(choice.href, { signal: controller.signal, credentials: 'same-origin' });
-      if (!response.ok) throw new Error(`Hat request failed: ${response.status}`);
-      const html = await response.text();
-      if (controller.signal.aborted) return;
-      const documentFromResponse = new DOMParser().parseFromString(html, 'text/html');
-      const productId = choice.dataset.productChoice;
-      const incoming = [...documentFromResponse.querySelectorAll('[data-hat-panel]')]
-        .find((item) => item.dataset.hatPanel === productId);
-      const current = this.querySelector('[data-hat-panel]');
-      if (!incoming || !current) throw new Error('Hat panel missing from response');
-      const panel = document.importNode(incoming, true);
-      current.replaceWith(panel);
-      await this.#reinitializeAppBlockScripts(panel);
-      if (controller.signal.aborted) return;
-      this.#initialize();
-      for (const item of this.querySelectorAll('[data-product-choice]')) {
-        if (item === choice) item.setAttribute('aria-current', 'true');
-        else item.removeAttribute('aria-current');
-      }
-      const source = panel.querySelector('[data-variants]');
-      const selected = this.#variants(panel).find((variant) => variant.id === source?.value);
-      if (selected) this.#apply(panel, selected, true);
-      this.#prepareGloboThumbnails();
-      this.#enforceGloboChoice();
-      this.#updateGloboTotals();
-    } catch (error) {
-      if (error?.name === 'AbortError') return;
-      // Keep a usable path if the background request fails.
-      window.location.assign(choice.href);
-    } finally {
-      if (this.#productRequest === controller) {
-        this.#productRequest = undefined;
-        this.removeAttribute('aria-busy');
-      }
-    }
-  }
+  #prefetchProductChoice = (event) => {
+    const target = event.composedPath()[0];
+    if (!(target instanceof Element)) return;
+    const choice = target.closest('[data-product-choice]');
+    if (!(choice instanceof HTMLAnchorElement) || choice.dataset.productChoice === this.querySelector('[data-hat-panel]:not([hidden])')?.dataset.hatPanel) return;
+    const existing = [...document.head.querySelectorAll('link[rel="prefetch"][as="document"]')]
+      .find((link) => link.href === choice.href);
+    if (existing) return;
+    const prefetch = document.createElement('link');
+    prefetch.rel = 'prefetch';
+    prefetch.as = 'document';
+    prefetch.href = choice.href;
+    document.head.append(prefetch);
+  };
 
-  /** Re-run app scripts from fetched markup so product-specific app blocks bind.
-   * @param {Element} panel - Newly inserted product panel.
-   */
-  async #reinitializeAppBlockScripts(panel) {
-    const scripts = [...panel.querySelectorAll('.shopify-app-block script[src]')];
-    await Promise.all(scripts.map((script) => new Promise((resolve) => {
-      const parent = script.parentElement;
-      if (!parent) {
-        resolve();
-        return;
+  #restoreScrollAfterGlobo() {
+    let saved;
+    try {
+      saved = JSON.parse(sessionStorage.getItem(this.#scrollStorageKey) || 'null');
+      sessionStorage.removeItem(this.#scrollStorageKey);
+    } catch {
+      return;
+    }
+    if (!saved || saved.path !== window.location.pathname) return;
+
+    let done = false;
+    let quietTimer;
+    let fallbackTimer;
+    const hasGloboOptions = () => this.querySelector('.gpo-app input:not([type="hidden"]), .gpo-app select, .gpo-app textarea, .gpo-app button');
+    const cleanup = () => {
+      window.clearTimeout(quietTimer);
+      window.clearTimeout(fallbackTimer);
+      window.removeEventListener('load', onLoad);
+      for (const eventName of ['wheel', 'touchstart', 'pointerdown', 'keydown']) {
+        window.removeEventListener(eventName, onUserInput);
       }
-      const replacement = document.createElement('script');
-      for (const attribute of script.attributes) replacement.setAttribute(attribute.name, attribute.value);
-      if (script.textContent) replacement.textContent = script.textContent;
-      replacement.addEventListener('load', resolve, { once: true });
-      replacement.addEventListener('error', resolve, { once: true });
-      script.remove();
-      parent.appendChild(replacement);
-    })));
+      observer.disconnect();
+      if (this.#scrollRestoreCleanup === cleanup) this.#scrollRestoreCleanup = undefined;
+    };
+    const finish = () => {
+      if (done) return;
+      done = true;
+      cleanup();
+      const scrollContainer = getScrollContainer();
+      scrollContainer.scrollTo({ left: saved.x, top: saved.y, behavior: 'instant' });
+    };
+    const onUserInput = () => {
+      done = true;
+      cleanup();
+    };
+    const checkReady = () => {
+      if (document.readyState !== 'complete' || !hasGloboOptions()) return;
+      window.clearTimeout(quietTimer);
+      quietTimer = window.setTimeout(finish, 400);
+    };
+    const onLoad = () => {
+      fallbackTimer = window.setTimeout(finish, 8000);
+      checkReady();
+    };
+    const observer = new MutationObserver(checkReady);
+    observer.observe(this, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'style'] });
+    for (const eventName of ['wheel', 'touchstart', 'pointerdown', 'keydown']) {
+      window.addEventListener(eventName, onUserInput, { once: true, passive: true });
+    }
+    this.#scrollRestoreCleanup = cleanup;
+    if (document.readyState === 'complete') onLoad();
+    else window.addEventListener('load', onLoad, { once: true });
   }
 
   /** @param {Event} event - A Panel Count or Color change. */
