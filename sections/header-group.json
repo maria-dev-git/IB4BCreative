@@ -66,7 +66,7 @@
           "static": true,
           "settings": {
             "menu": "main-menu",
-            "background_color": "{{ settings.color_palette.background }}",
+            "background_color": "{{ settings.color_palette.foreground }}",
             "text_color": "",
             "type_font_primary_size": "1.125rem",
             "menu_font_style": "inverse",

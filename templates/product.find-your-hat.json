@@ -219,6 +219,8 @@
         "product_choices": {
           "type": "product_choices",
           "settings": {
+            "mobile_columns": "1",
+            "mobile_card_width": 240,
             "heading": "Choose Your Hat Style",
             "type_preset": "h3",
             "font": "var(--font-body--family)",
@@ -280,7 +282,7 @@
           "type": "variants",
           "settings": {
             "image_width": 100,
-            "image_width_mobile": 60,
+            "image_width_mobile": 72,
             "thumbnail_border_color": "",
             "padding-block-start": 0,
             "padding-block-end": 0,
@@ -304,26 +306,6 @@
             "padding-inline-start": 0,
             "padding-inline-end": 0
           }
-        },
-        "description": {
-          "type": "description",
-          "settings": {
-            "text": "",
-            "type_preset": "rte",
-            "font": "var(--font-body--family)",
-            "weight": "",
-            "font_size": "1rem",
-            "font_size_mobile": "",
-            "line_height": "normal",
-            "letter_spacing": "normal",
-            "case": "none",
-            "wrap": "pretty",
-            "alignment": "left",
-            "padding-block-start": 0,
-            "padding-block-end": 0,
-            "padding-inline-start": 0,
-            "padding-inline-end": 0
-          }
         }
       },
       "block_order": [
@@ -332,8 +314,7 @@
         "price",
         "variants",
         "globo_product_options_app_block_qaKGcM",
-        "buy_buttons",
-        "description"
+        "buy_buttons"
       ],
       "settings": {
         "collection": "hats",

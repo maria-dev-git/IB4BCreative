@@ -974,13 +974,13 @@
             "text_jkTyJr": {
               "type": "text",
               "settings": {
-                "text": "<p>Some bonds don’t end when the uniform comes off. They’re carried forward in the stories we tell, the experiences we share, and the brothers who stood beside us through it all.</p><p>Infantry Brothers Clothing began when a group of brothers in arms came together with a shared vision: to create something that represents the connection between those who served and the experiences<br/>that remain long after military service ends.</p><p><strong>BUILT ON SHARED EXPERIENCE</strong><br/>The memories, challenges, and victories that shaped us.</p><p><strong>CONNECTED BEYOND THE UNIFORM</strong><br/>Different paths after service. One enduring brotherhood.</p><p><strong>A LEGACY WORTH CARRYING</strong><br/>Honoring where we’ve been and the stories that deserve to live on.</p>",
+                "text": "<p>Infantry Brothers Clothing began when a group of brothers in arms came together to create something that would carry their shared experiences beyond the uniform. Built on the stories, memories, and bonds forged through service, the brand celebrates a brotherhood that lasts a lifetime.</p><p><strong>BUILT ON SHARED EXPERIENCE</strong><br/>The memories, challenges, and victories that shaped us.</p><p><strong>CONNECTED BEYOND THE UNIFORM</strong><br/>Different paths after service. One enduring brotherhood.</p><p><strong>A LEGACY WORTH CARRYING</strong><br/>Honoring where we’ve been and the stories that deserve to live on.</p>",
                 "width": "100%",
                 "max_width": "none",
                 "alignment": "left",
                 "type_preset": "paragraph",
                 "font": "var(--font-body--family)",
-                "font_size": "1.25rem",
+                "font_size": "1rem",
                 "line_height": "normal",
                 "letter_spacing": "normal",
                 "case": "none",
