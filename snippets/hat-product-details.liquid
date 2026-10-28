@@ -37,8 +37,15 @@
       <div class="hat-builder__options" data-options hidden on:change="/chooseOption">
         {% for option in hat.options_with_values %}
           {% assign option_index = forloop.index0 %}
+          {% assign option_label = option.name %}
+          {% assign normalized_option_name = option.name | downcase %}
+          {% if normalized_option_name contains 'color' or normalized_option_name contains 'colour' %}
+            {% assign option_label = 'CHOOSE YOUR COLOR' %}
+          {% elsif normalized_option_name contains 'panel count' %}
+            {% assign option_label = 'SELECT YOUR PANEL COUNT' %}
+          {% endif %}
           <fieldset class="hat-builder__field" data-option-field data-option-index="{{ option_index }}" data-option-name="{{ option.name | escape }}">
-            <legend>{{ option.name | escape }}</legend>
+            <legend>{{ option_label | escape }}</legend>
             <div class="hat-builder__option-list">
               {% for value in option.values %}
                 {% liquid

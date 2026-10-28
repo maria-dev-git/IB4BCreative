@@ -311,6 +311,8 @@ class HatProductBuilder extends Component {
       if (!incoming || !current) throw new Error('Hat panel missing from response');
       const panel = document.importNode(incoming, true);
       current.replaceWith(panel);
+      await this.#reinitializeAppBlockScripts(panel);
+      if (controller.signal.aborted) return;
       this.#initialize();
       for (const item of this.querySelectorAll('[data-product-choice]')) {
         if (item === choice) item.setAttribute('aria-current', 'true');
@@ -332,6 +334,27 @@ class HatProductBuilder extends Component {
         this.removeAttribute('aria-busy');
       }
     }
+  }
+
+  /** Re-run app scripts from fetched markup so product-specific app blocks bind.
+   * @param {Element} panel - Newly inserted product panel.
+   */
+  async #reinitializeAppBlockScripts(panel) {
+    const scripts = [...panel.querySelectorAll('.shopify-app-block script[src]')];
+    await Promise.all(scripts.map((script) => new Promise((resolve) => {
+      const parent = script.parentElement;
+      if (!parent) {
+        resolve();
+        return;
+      }
+      const replacement = document.createElement('script');
+      for (const attribute of script.attributes) replacement.setAttribute(attribute.name, attribute.value);
+      if (script.textContent) replacement.textContent = script.textContent;
+      replacement.addEventListener('load', resolve, { once: true });
+      replacement.addEventListener('error', resolve, { once: true });
+      script.remove();
+      parent.appendChild(replacement);
+    })));
   }
 
   /** @param {Event} event - A Panel Count or Color change. */

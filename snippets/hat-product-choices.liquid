@@ -10,11 +10,13 @@
   {% if block.settings.heading != blank %}
     <h2 class="hat-builder__choices-heading {{ block.settings.type_preset | default: 'h2' }}{% if block.settings.type_preset == 'custom' %} custom-typography custom-font-size hat-custom-typography{% endif %}" style="{% render 'hat-typography-style', settings: block.settings %}">{{ block.settings.heading | escape }}</h2>
   {% endif %}
-  <nav class="hat-builder__products" aria-label="{{ 'hat_finder.style' | t | escape }}">
+  <nav class="hat-builder__products" style="--hat-choice-columns-mobile: {{ block.settings.mobile_columns | default: 1 }}; --hat-choice-card-width-mobile: {{ block.settings.mobile_card_width | default: 320 }}px;" aria-label="{{ 'hat_finder.style' | t | escape }}">
     {% for hat in hats.products %}
       <a class="hat-builder__choice" href="{{ hat.url }}?view=find-your-hat" data-product-choice="{{ hat.id }}" {% if hat.id == initial_product.id %}aria-current="true"{% endif %}>
         {% if hat.featured_image %}{{ hat.featured_image | image_url: width: 320 | image_tag: widths: '120, 240, 320', sizes: '160px', loading: 'lazy', alt: '' }}{% endif %}
-        <span>{{ hat.title | escape }}</span>
+        <span class="hat-builder__choice-title">{{ hat.title | escape }}</span>
+        {% assign hat_summary = hat.description | strip_html | strip | truncate: 100 %}
+        {% if hat_summary != blank %}<span class="hat-builder__choice-description">{{ hat_summary | escape }}</span>{% endif %}
       </a>
     {% endfor %}
   </nav>
@@ -28,4 +30,15 @@
        outline: 2px solid var(--color-foreground);
   }
   .hat-builder__choice img { inline-size: 100%; aspect-ratio: 1; object-fit: contain; }
+  .hat-builder__choice-description { color: var(--color-foreground); font-size: var(--font-size--sm, 0.875rem); }
+  @media screen and (min-width: 750px) {
+    .hat-builder__choice-title { font-size: calc(1em + 2px); }
+    .hat-builder__choice-description { font-size: calc(var(--font-size--sm, 0.875rem) + 2px); }
+  }
+  @media screen and (max-width: 749px) {
+    .hat-builder__products { display: grid; grid-auto-flow: column; grid-auto-columns: min(var(--hat-choice-card-width-mobile), calc((100% - (var(--hat-choice-columns-mobile) - 1) * var(--gap-md)) / var(--hat-choice-columns-mobile))); justify-content: start; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: inline mandatory; scrollbar-width: none; }
+    .hat-builder__products::-webkit-scrollbar { display: none; }
+    .hat-builder__choice { inline-size: 100%; max-inline-size: none; scroll-snap-align: start; }
+    .hat-builder__choice[aria-current] { outline: none; border-color: #fff; }
+  }
 {% endstylesheet %}

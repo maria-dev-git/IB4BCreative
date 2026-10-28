@@ -297,7 +297,7 @@
           "type": "buy_buttons",
           "settings": {
             "show_icon": false,
-            "style_class": "button",
+            "style_class": "button-secondary",
             "padding-block-start": 0,
             "padding-block-end": 0,
             "padding-inline-start": 0,

@@ -30,6 +30,7 @@
   "product_choices": "Hat style choices",
   "title_content_help": "Leave blank to use each hat’s product title. Enter text to override it in this block.",
   "description_content_help": "Leave blank to use each hat’s product description. Enter text to override it in this block.",
+  "mobile_card_width": "Mobile card width",
   "show_product_choices": "Show hat style choices",
   "page_width": "Page width",
   "full_width": "Full width",
