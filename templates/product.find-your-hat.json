@@ -280,6 +280,7 @@
           "type": "variants",
           "settings": {
             "image_width": 100,
+            "image_width_mobile": 60,
             "thumbnail_border_color": "",
             "padding-block-start": 0,
             "padding-block-end": 0,

@@ -96,6 +96,8 @@
   @media screen and (min-width: 750px) { .hat-builder__panel { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
   @media screen and (max-width: 749px) {
     .hat-builder { --hat-globo-active-scale: var(--hat-globo-thumbnail-scale-mobile); }
+    .hat-builder__variant-detail .hat-builder__option { flex-basis: calc(var(--hat-option-image-width-mobile) + 24px); }
+    .hat-builder__variant-detail .hat-builder__option-card img { inline-size: var(--hat-option-image-width-mobile); }
     .hat-builder .hat-custom-typography,
     .hat-builder .hat-custom-typography > * { font-size: var(--hat-font-size-mobile, var(--font-size)); }
   }
@@ -1849,6 +1851,16 @@
           "step": 4,
           "unit": "px",
           "default": 80
+        },
+        {
+          "type": "range",
+          "id": "image_width_mobile",
+          "label": "t:hat_builder.mobile_thumbnail_width",
+          "min": 32,
+          "max": 120,
+          "step": 4,
+          "unit": "px",
+          "default": 60
         },
         {
           "type": "color",

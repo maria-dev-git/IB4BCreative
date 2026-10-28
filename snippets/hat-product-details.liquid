@@ -23,7 +23,7 @@
 {% for block in items %}
   {% assign detail_type = block.type | default: block %}
   {% if detail_type == 'product_choices' %}{% continue %}{% endif %}
-  <div class="hat-builder__detail spacing-style" style="{% render 'spacing-style', settings: block.settings %} --hat-block-alignment: {{ block.settings.alignment | default: 'start' }}; --hat-option-image-width: {{ block.settings.image_width | default: 80 }}px; {% if block.settings.thumbnail_border_color != blank %}--hat-thumbnail-border: {{ block.settings.thumbnail_border_color }};{% endif %}" {{ block.shopify_attributes }}>
+  <div class="hat-builder__detail{% if detail_type == 'variants' %} hat-builder__variant-detail{% endif %} spacing-style" style="{% render 'spacing-style', settings: block.settings %} --hat-block-alignment: {{ block.settings.alignment | default: 'start' }}; --hat-option-image-width: {{ block.settings.image_width | default: 80 }}px; --hat-option-image-width-mobile: {{ block.settings.image_width_mobile | default: 60 }}px; {% if block.settings.thumbnail_border_color != blank %}--hat-thumbnail-border: {{ block.settings.thumbnail_border_color }};{% endif %}" {{ block.shopify_attributes }}>
     {% case detail_type %}
       {% when '@app' %}
         {% render block %}
@@ -33,7 +33,7 @@
       {% when 'price' %}
         <p class="{{ block.settings.type_preset | default: 'paragraph' }}{% if block.settings.type_preset == 'custom' %} custom-typography custom-font-size hat-custom-typography{% endif %}" style="{% render 'hat-typography-style', settings: block.settings %}" data-price>{{ selected.price | money_with_currency }}</p>
       {% when 'variants' %}
-      {% assign option_sizes = block.settings.image_width | default: 80 | append: 'px' %}
+      {% capture option_sizes %}(max-width: 749px) {{ block.settings.image_width_mobile | default: 60 }}px, {{ block.settings.image_width | default: 80 }}px{% endcapture %}
       <div class="hat-builder__options" data-options hidden on:change="/chooseOption">
         {% for option in hat.options_with_values %}
           {% assign option_index = forloop.index0 %}
