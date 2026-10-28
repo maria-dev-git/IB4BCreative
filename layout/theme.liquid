@@ -7,6 +7,24 @@
   dir="{{ request.locale.direction | default: 'ltr' }}"
 >
   <head>
+    <script>
+      (function () {
+        try {
+          var saved = JSON.parse(sessionStorage.getItem('hat-builder-scroll-position') || 'null');
+          sessionStorage.removeItem('hat-builder-scroll-position');
+          if (!saved || saved.path !== window.location.pathname) return;
+          window.__hatBuilderScrollRestore = saved;
+          window.__hatBuilderPreviousScrollRestoration = history.scrollRestoration;
+          history.scrollRestoration = 'manual';
+          document.documentElement.setAttribute('data-hat-scroll-pending', '');
+          window.__hatBuilderScrollFallback = window.setTimeout(function () {
+            document.documentElement.removeAttribute('data-hat-scroll-pending');
+          }, 2500);
+        } catch (error) {
+          // A storage failure should never block the storefront from rendering.
+        }
+      })();
+    </script>
     {%- if settings.favicon != blank -%}
       <link
         rel="icon"
@@ -172,5 +190,28 @@
     {% if settings.quick_add or settings.mobile_quick_add %}
       {% render 'quick-add-modal' %}
     {% endif %}
+    <script>
+      (function () {
+        var saved = window.__hatBuilderScrollRestore;
+        if (!saved) return;
+        var restore = function () {
+          var container = window.matchMedia('(min-width: 990px)').matches
+            ? document.querySelector('.page-wrapper')
+            : document.scrollingElement;
+          if (container) container.scrollTo({ left: saved.x, top: saved.y, behavior: 'instant' });
+          window.clearTimeout(window.__hatBuilderScrollFallback);
+          document.documentElement.removeAttribute('data-hat-scroll-pending');
+          window.requestAnimationFrame(function () {
+            history.scrollRestoration = window.__hatBuilderPreviousScrollRestoration || 'auto';
+          });
+          delete window.__hatBuilderScrollRestore;
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', restore, { once: true });
+        } else {
+          restore();
+        }
+      })();
+    </script>
   </body>
 </html>

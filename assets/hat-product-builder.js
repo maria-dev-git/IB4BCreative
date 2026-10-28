@@ -8,8 +8,6 @@ class HatProductBuilder extends Component {
   /** @type {AbortController | undefined} */
   #globoListeners;
   #scrollStorageKey = 'hat-builder-scroll-position';
-  /** @type {(() => void) | undefined} */
-  #scrollRestoreCleanup;
   #updatingGlobo = false;
   /** @type {Element | undefined} */
   #touchedSwatch;
@@ -17,7 +15,6 @@ class HatProductBuilder extends Component {
     this.#prepareGloboThumbnails();
     this.#enforceGloboChoice();
     this.#updateGloboTotals();
-    this.#restoreScrollAfterGlobo();
   });
 
   connectedCallback() {
@@ -51,7 +48,6 @@ class HatProductBuilder extends Component {
   }
 
   disconnectedCallback() {
-    this.#scrollRestoreCleanup?.();
     this.#globoListeners?.abort();
     this.#globoObserver.disconnect();
     this.#clearThumbnailTouch();
@@ -310,60 +306,6 @@ class HatProductBuilder extends Component {
     prefetch.href = choice.href;
     document.head.append(prefetch);
   };
-
-  #restoreScrollAfterGlobo() {
-    let saved;
-    try {
-      saved = JSON.parse(sessionStorage.getItem(this.#scrollStorageKey) || 'null');
-      sessionStorage.removeItem(this.#scrollStorageKey);
-    } catch {
-      return;
-    }
-    if (!saved || saved.path !== window.location.pathname) return;
-
-    let done = false;
-    let quietTimer;
-    let fallbackTimer;
-    const hasGloboOptions = () => this.querySelector('.gpo-app input:not([type="hidden"]), .gpo-app select, .gpo-app textarea, .gpo-app button');
-    const cleanup = () => {
-      window.clearTimeout(quietTimer);
-      window.clearTimeout(fallbackTimer);
-      window.removeEventListener('load', onLoad);
-      for (const eventName of ['wheel', 'touchstart', 'pointerdown', 'keydown']) {
-        window.removeEventListener(eventName, onUserInput);
-      }
-      observer.disconnect();
-      if (this.#scrollRestoreCleanup === cleanup) this.#scrollRestoreCleanup = undefined;
-    };
-    const finish = () => {
-      if (done) return;
-      done = true;
-      cleanup();
-      const scrollContainer = getScrollContainer();
-      scrollContainer.scrollTo({ left: saved.x, top: saved.y, behavior: 'instant' });
-    };
-    const onUserInput = () => {
-      done = true;
-      cleanup();
-    };
-    const checkReady = () => {
-      if (document.readyState !== 'complete' || !hasGloboOptions()) return;
-      window.clearTimeout(quietTimer);
-      quietTimer = window.setTimeout(finish, 400);
-    };
-    const onLoad = () => {
-      fallbackTimer = window.setTimeout(finish, 8000);
-      checkReady();
-    };
-    const observer = new MutationObserver(checkReady);
-    observer.observe(this, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'hidden', 'style'] });
-    for (const eventName of ['wheel', 'touchstart', 'pointerdown', 'keydown']) {
-      window.addEventListener(eventName, onUserInput, { once: true, passive: true });
-    }
-    this.#scrollRestoreCleanup = cleanup;
-    if (document.readyState === 'complete') onLoad();
-    else window.addEventListener('load', onLoad, { once: true });
-  }
 
   /** @param {Event} event - A Panel Count or Color change. */
   chooseOption(event) {

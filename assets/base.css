@@ -12,6 +12,8 @@ body {
   font-variation-settings: 'slnt' 0;
 }
 
+html[data-hat-scroll-pending] body { visibility: hidden; }
+
 :root {
   --hover-transition-duration: 0.25s;
   --hover-transition-timing: ease-out;
