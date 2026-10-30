@@ -1,14 +1,36 @@
-
+{% doc %}
+  Renders product description text with an optional mobile metafield replacement.
+  Uses the containing section's use_mobile_description setting and custom.mobile_description.
+  @example
+  {% content_for 'block', type: 'product-description', id: 'description', closest.product: product %}
+{% enddoc %}
 
 {% liquid
-  assign product = block.settings.product
+  assign product = closest.product | default: product
   if request.visual_preview_mode and product == blank
     assign product = collections.all.products.first
     assign text = product.description
   endif
 %}
 
-{% render 'text', fallback_text: text, block: block %}
+{% liquid
+  assign mobile_description = product.metafields.custom.mobile_description
+  assign use_mobile_description = false
+  if section.settings.use_mobile_description and mobile_description.value != blank
+    case mobile_description.type
+      when 'rich_text_field', 'multi_line_text_field', 'single_line_text_field'
+        assign use_mobile_description = true
+    endcase
+  endif
+%}
+
+{% if use_mobile_description %}
+  {% capture mobile_content %}{{ mobile_description | metafield_tag }}{% endcapture %}
+  {% render 'text', fallback_text: text, block: block, class: 'hidden--mobile' %}
+  {% render 'text', text_content: mobile_content, block: block, class: 'hidden--desktop' %}
+{% else %}
+  {% render 'text', fallback_text: text, block: block %}
+{% endif %}
 
 {% schema %}
 {

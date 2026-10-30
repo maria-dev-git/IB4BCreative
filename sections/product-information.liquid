@@ -1,3 +1,8 @@
+{% comment %}
+  Product information section; owns media, details, and the mobile description preference.
+  @example
+  Configure the Product information section on a product template.
+{% endcomment %}
 {% render 'section-border', section_id: section.id, settings: section.settings %}
 
 
@@ -389,6 +394,13 @@
     "groups": ["header", "footer"]
   },
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "use_mobile_description",
+      "label": "t:mobile_product_description.label",
+      "info": "t:mobile_product_description.help",
+      "default": false
+    },
     {
       "type": "checkbox",
       "id": "use_color_scheme",

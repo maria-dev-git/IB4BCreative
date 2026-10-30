@@ -8,6 +8,10 @@
  * ------------------------------------------------------------
  */
 {
+  "mobile_product_description": {
+    "label": "Use different product description on mobile",
+    "help": "Uses custom.mobile_description below 750px in Product description blocks, including accordion content. Supports rich text or plain text metafields. Falls back to the regular description when empty."
+  },
   "mobile_image_text": {
     "overlay_color": "Mobile image overlay color",
     "overlay_opacity": "Mobile image overlay opacity",
