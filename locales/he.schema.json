@@ -8,6 +8,11 @@
  * ------------------------------------------------------------
  */
 {
+  "product_list_mobile_width": {
+    "enable": "Custom mobile card width",
+    "width": "Mobile product card width",
+    "help": "Applies below 750px in carousel layouts. Cards fit within the available screen width."
+  },
   "mobile_product_description": {
     "label": "Use different product description on mobile",
     "help": "Uses custom.mobile_description below 750px in Product description blocks, including accordion content. Supports rich text or plain text metafields. Falls back to the regular description when empty."

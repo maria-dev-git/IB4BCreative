@@ -1,3 +1,8 @@
+{% comment %}
+  Collection product list with grid, carousel, and editorial layouts.
+  @example
+  Configure Featured collection and optionally set a custom mobile carousel card width.
+{% endcomment %}
 {% liquid
   assign section_color_scheme = nil
   if section.settings.use_color_scheme
@@ -210,7 +215,26 @@
         }
       ],
       "default": "60cqw",
+      "visible_if": "{{ section.settings.custom_mobile_card_width == false and section.settings.layout_type == 'carousel' or section.settings.custom_mobile_card_width == false and section.settings.carousel_on_mobile == true }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "custom_mobile_card_width",
+      "label": "t:product_list_mobile_width.enable",
+      "default": false,
       "visible_if": "{{ section.settings.layout_type == 'carousel' or section.settings.carousel_on_mobile == true }}"
+    },
+    {
+      "type": "range",
+      "id": "mobile_card_width",
+      "label": "t:product_list_mobile_width.width",
+      "info": "t:product_list_mobile_width.help",
+      "min": 150,
+      "max": 450,
+      "step": 10,
+      "unit": "px",
+      "default": 240,
+      "visible_if": "{{ section.settings.custom_mobile_card_width and section.settings.layout_type == 'carousel' or section.settings.custom_mobile_card_width and section.settings.carousel_on_mobile == true }}"
     },
     {
       "type": "range",

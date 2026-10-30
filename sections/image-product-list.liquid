@@ -144,6 +144,17 @@
     align-items: center;
   }
 
+  /* Reserve two title lines so centered cards keep their image edges aligned. */
+  .image-product-list [ref='productTitleLink'] .text-block > * {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    block-size: 2lh;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+
   .image-product-list .resource-list__slide,
   .image-product-list .resource-list__slide > .resource-list__item:not(.image-product-list__feature) {
     height: auto;

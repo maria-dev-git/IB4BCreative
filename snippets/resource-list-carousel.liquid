@@ -5,6 +5,7 @@
   @param {object} slides - An array of HTML for the slides to display in the carousel
   @param {number} slide_count - The number of slides to display in the carousel
   @param {object} settings - The block or sections settings from the parent block/section.
+  Optional settings.custom_mobile_card_width enables settings.mobile_card_width (pixels) below 750px.
   @param {string} [slide_width_max] - The maximum width of the slides in the carousel.
 
   @example
@@ -38,7 +39,10 @@
   {% endfor %}
 {% endcapture %}
 
-<div style="{{ gutter_style }} --slide-width-max: {{ slide_width_max | default: '300px' }};">
+<div
+  {% if settings.custom_mobile_card_width %}class="resource-list-carousel--custom-mobile-width"{% endif %}
+  style="{{ gutter_style }} --slide-width-max: {{ slide_width_max | default: '300px' }};{% if settings.custom_mobile_card_width %} --resource-list-custom-mobile-card-width: {{ settings.mobile_card_width | default: 240 }}px;{% endif %}"
+>
   {% render 'slideshow',
     ref: slideshow_ref,
     class: 'resource-list__carousel',
@@ -86,6 +90,12 @@
       );
       --fallback-slide-width: clamp(150px, var(--mobile-card-size, 60cqw), var(--slide-width-max));
       --slide-width: var(--section-slide-width, var(--fallback-slide-width));
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .resource-list-carousel--custom-mobile-width .resource-list__carousel .resource-list__slide {
+      --slide-width: min(var(--resource-list-custom-mobile-card-width), 100cqw);
     }
   }
 
