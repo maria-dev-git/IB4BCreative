@@ -301,7 +301,7 @@
                   "type": "_accordion-row",
                   "settings": {
                     "heading": "Product Description",
-                    "open_by_default": false,
+                    "open_by_default": true,
                     "icon": "none",
                     "width": 20
                   },
@@ -355,6 +355,7 @@
         "disclosures_g9mWze"
       ],
       "settings": {
+        "use_mobile_description": true,
         "use_color_scheme": false,
         "color_scheme": "",
         "content_width": "content-center-aligned",

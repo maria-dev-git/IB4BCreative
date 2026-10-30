@@ -46,6 +46,9 @@
   {%- if product != blank -%}
     {%- assign product_form_id = 'BuyButtons-ProductForm-' | append: section.id -%}
     <product-form-component
+      {% if template.name == 'product' and template.suffix == blank %}
+        data-personalization-layout
+      {% endif %}
       data-section-id="{{ section.id }}"
       data-product-id="{{ product.id }}"
       data-product-url="{{ product.url }}"

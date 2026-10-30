@@ -17,6 +17,88 @@
     flex-wrap: wrap;
   }
 
+  /* Globo inserts before Add to cart; the form component places it before quantity. */
+  [data-personalization-layout] .gpo-container {
+    display: block;
+    flex: 1 0 100%;
+    inline-size: 100%;
+    min-inline-size: 0;
+    margin-block-end: var(--gap-xl);
+  }
+
+  [data-personalization-layout] .gpo-app {
+    padding: 0;
+    border: 0;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-body--family);
+  }
+
+  [data-personalization-layout] .gpo-app:not(:has(.gpo-element)) {
+    display: none;
+  }
+
+  [data-personalization-layout] .gpo-container:not(:has(.gpo-element)) {
+    margin-block-end: 0;
+  }
+
+  [data-personalization-layout] .gpo-app .gpo-label,
+  [data-personalization-layout] .gpo-app .gpo-label .label-content {
+    color: var(--color-foreground);
+    font-family: inherit;
+    overflow-wrap: anywhere;
+  }
+
+  [data-personalization-layout] .gpo-app .gpo-form__group:has(input[data-type='switch']) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--gap-md);
+    min-block-size: 44px;
+  }
+
+  [data-personalization-layout] .gpo-app .gpo-form__group:has(input[data-type='switch']) .gpo-label {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--gap-xs);
+    flex: 0 1 auto;
+    inline-size: auto;
+    min-inline-size: 0;
+    margin: 0;
+  }
+
+  [data-personalization-layout] .gpo-app .gpo-form__group:has(input[data-type='switch']) .label-content {
+    margin: 0;
+  }
+
+  [data-personalization-layout] .gpo-app .gpo-form__group:has(input[data-type='switch']) .messages {
+    flex-basis: 100%;
+  }
+
+  [data-personalization-layout] .gpo-app .gpo-input,
+  [data-personalization-layout] .gpo-app .gpo-select,
+  [data-personalization-layout] .gpo-app .gpo-textarea {
+    max-inline-size: 100%;
+    border-color: var(--color-input-border);
+    border-radius: var(--style-border-radius-inputs);
+    background: var(--color-input-background);
+    color: var(--color-input-text);
+    font-family: inherit;
+  }
+
+  [data-personalization-layout] .gpo-app :is(input, textarea, select, button):focus-visible {
+    outline: 2px solid var(--color-foreground);
+    outline-offset: 3px;
+  }
+
+  [data-personalization-layout]:has(.gpo-element) .product-form-buttons {
+    gap: var(--gap-md);
+  }
+
+  [data-personalization-layout]:has(.gpo-element) .product-form-buttons > .quantity-selector-wrapper {
+    flex-basis: 100%;
+  }
+
   .product-form-buttons:not(:has(.quantity-rules)) {
     gap: calc(var(--gap-sm) / 2);
 

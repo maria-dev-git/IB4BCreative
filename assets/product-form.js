@@ -205,6 +205,7 @@ if (!customElements.get('add-to-cart-component')) {
 class ProductFormComponent extends Component {
   requiredRefs = ['variantId', 'liveRegion'];
   #abortController = new AbortController();
+  #personalizationObserver = new MutationObserver(() => this.#positionPersonalization());
 
   /** @type {number | undefined} */
   #timeout;
@@ -232,18 +233,38 @@ class ProductFormComponent extends Component {
   connectedCallback() {
     super.connectedCallback();
 
+    if (this.#abortController.signal.aborted) this.#abortController = new AbortController();
     const { signal } = this.#abortController;
     const target = this.closest('.shopify-section, dialog, product-card');
     target?.addEventListener(StandardEvents.productSelect, this.#onProductSelect, { signal });
 
     // Listen for cart updates to sync data-cart-quantity
     document.addEventListener(StandardEvents.cartLinesUpdate, this.#onCartUpdate, { signal });
+
+    if (this.hasAttribute('data-personalization-layout')) {
+      this.#personalizationObserver.observe(this, { childList: true, subtree: true });
+      this.#positionPersonalization();
+    }
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
 
     this.#abortController.abort();
+    this.#personalizationObserver.disconnect();
+  }
+
+  // Move the existing app container within its form, preserving its inputs and listeners.
+  // DOM order keeps personalization ahead of quantity for keyboard and screen-reader users.
+  #positionPersonalization() {
+    const buttons = this.querySelector('.product-form-buttons');
+    const form = buttons?.closest('form');
+    if (!buttons || !form) return;
+
+    for (const options of form.querySelectorAll('.gpo-container')) {
+      if (!buttons.contains(options)) continue;
+      buttons.before(options);
+    }
   }
 
   #getVariantIdInput() {
