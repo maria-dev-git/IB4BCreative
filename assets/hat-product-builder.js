@@ -127,10 +127,44 @@ class HatProductBuilder extends Component {
   /** @param {Event} event - A Globo image-option selection or deselection. */
   #onGloboChange = (event) => {
     const input = event.target;
-    if (!(input instanceof HTMLInputElement) || !input.checked ||
+    if (!(input instanceof HTMLInputElement) ||
       !input.matches('.gpo-app input[type="radio"][data-type="image-swatches"]')) return;
-    this.#enforceGloboChoice(input);
+    this.#enforceGloboChoice(input.checked ? input : undefined);
   };
+
+  // Keep the selected app option between Globo's injected options and the cart button.
+  #updateGloboTitle() {
+    for (const panel of this.querySelectorAll('[data-hat-panel]')) {
+      const button = panel.querySelector('add-to-cart-component');
+      if (!button) continue;
+      const message = panel.querySelector('[data-hat-decoration-message]');
+      const input = panel.querySelector('.gpo-app input[type="radio"][data-type="image-swatches"]:checked');
+      const swatch = input?.closest('.image-swatches');
+      const title = (swatch?.querySelector('.gpo-tooltip__title')?.textContent ||
+        input?.getAttribute('aria-label') || (input instanceof HTMLInputElement ? input.value : '')).trim().replace(/\s+/g, ' ');
+      const group = input?.closest('.gpo-form__group');
+      const groupName = `${input?.getAttribute('name') || ''} ${group?.querySelector('.gpo-label .label-content, .gpo-label')?.textContent || ''}`;
+      const prefix = /\bpatch(?:es)?\b/i.test(groupName) ? this.dataset.patchLabel :
+        /\bprints?\b/i.test(groupName) ? this.dataset.printLabel : '';
+      const selectedTitle = title && prefix ? `${prefix}: ${title}` : title;
+      let summary = panel.querySelector('[data-hat-selected-option]');
+      if (!summary && !title) {
+        if (message && message.nextElementSibling !== button) button.before(message);
+        continue;
+      }
+      if (!summary) {
+        summary = document.createElement('p');
+        summary.setAttribute('data-hat-selected-option', '');
+        summary.setAttribute('role', 'status');
+        summary.setAttribute('aria-atomic', 'true');
+        summary.className = 'paragraph';
+      }
+      if (summary.nextElementSibling !== button) button.before(summary);
+      if (message && message.nextElementSibling !== summary) summary.before(message);
+      if (summary.textContent !== selectedTitle) summary.textContent = selectedTitle;
+      summary.hidden = !title;
+    }
+  }
 
   // Read Globo's calculated surcharge without changing its pricing inputs or
   // generated money node. Globo remains responsible for checkout add-on prices.
@@ -195,6 +229,7 @@ class HatProductBuilder extends Component {
     } finally {
       this.#updatingGlobo = false;
     }
+    this.#updateGloboTitle();
   }
 
   #initialize() {

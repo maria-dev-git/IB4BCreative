@@ -245,7 +245,7 @@
           "type": "image",
           "static": true,
           "settings": {
-            "image": "shopify://shop_images/professional_motivator_club_blk_hoodie_mock.webp",
+            "image": "shopify://shop_images/patch_logo_back.webp",
             "link": "",
             "image_ratio": "adapt",
             "width": "fill",
@@ -1219,7 +1219,7 @@
                   "type": "text",
                   "name": "t:names.text",
                   "settings": {
-                    "text": "<p>Infantry Brothers Clothing is made by those who've stood the line, carried the ruck, and lived the grind. We aren't outsiders copying a culture—we're the men who came from it.<br/>Every product, every design, every detail is driven by real experience, not imagination. This isn't \"military-inspired\". It's military-built—straight from the source.</p>",
+                    "text": "<p>Infantry Brothers Clothing is made by those who've stood the line, carried the ruck, and lived the grind. We aren't outsiders copying a culture—we're the men who came from it. Every product, every design, every detail is driven by real experience, not imagination. This isn't \"military-inspired\". It's military-built—straight from the source.</p>",
                     "width": "fit-content",
                     "max_width": "normal",
                     "alignment": "left",

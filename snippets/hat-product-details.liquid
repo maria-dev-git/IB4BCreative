@@ -6,6 +6,7 @@
   @param {string} form_id - Unique product form ID.
   @param {string} add_text - Translated initial purchase label.
   @param {object} detail_blocks - Section detail blocks.
+  @param {string} decoration_message - Merchant's decoration placement message.
   @example
   {% render 'hat-product-details', hat: product, selected: product.selected_or_first_available_variant, section_id: section.id, form_id: 'HatForm', add_text: 'Add to cart', detail_blocks: section.blocks %}
 {% enddoc %}
@@ -82,6 +83,9 @@
           <input type="hidden" name="id" ref="variantId" data-gpo-product-variant-selector value="{{ selected.id }}" disabled>
           <input type="hidden" name="quantity" value="{{ selected.quantity_rule.min }}">
           <span class="hidden" ref="addToCartTextError"><span></span><span></span></span>
+          {% if decoration_message != blank %}
+            <p class="paragraph" data-hat-decoration-message>{{ decoration_message | escape | newline_to_br }}</p>
+          {% endif %}
           {% render 'add-to-cart-button', product: hat, can_add_to_cart: selected.available, add_to_cart_text: add_text, show_icon: block.settings.show_icon, class: block.settings.style_class %}
         {% endform %}
       </product-form-component>

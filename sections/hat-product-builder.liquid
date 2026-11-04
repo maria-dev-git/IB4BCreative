@@ -24,7 +24,7 @@
 {% render 'text-block-styles' %}
 <script src="{{ 'hat-product-builder.js' | asset_url }}" type="module"></script>
 <div class="section-background color-custom-{{ section.id }}"></div>
-<hat-product-builder class="section section--{{ section.settings.section_width | default: 'page-width' }} color-custom-{{ section.id }} hat-builder" style="--hat-globo-thumbnail-scale-mobile: {{ section.settings.globo_thumbnail_zoom_mobile | default: section.settings.globo_thumbnail_zoom | default: 200 | divided_by: 100.0 }}; --hat-globo-thumbnail-scale: {{ section.settings.globo_thumbnail_zoom | default: 200 | divided_by: 100.0 }}; --hat-padding-top: {{ section.settings.padding_top | default: 48 }}px; --hat-padding-bottom: {{ section.settings.padding_bottom | default: 48 }}px;" data-currency="{{ cart.currency.iso_code | default: shop.currency | escape }}" data-money-format="{{ shop.money_format | escape }}" data-total-price-message="{{ 'hat_finder.total_price_breakdown' | t: total: '[total]', base: '[base]', addon: '[addon]' | escape }}" data-add="{{ 'products.product.add_to_cart' | t | escape }}" data-sold="{{ 'products.product.sold_out' | t | escape }}">
+<hat-product-builder class="section section--{{ section.settings.section_width | default: 'page-width' }} color-custom-{{ section.id }} hat-builder" style="--hat-globo-thumbnail-scale-mobile: {{ section.settings.globo_thumbnail_zoom_mobile | default: section.settings.globo_thumbnail_zoom | default: 200 | divided_by: 100.0 }}; --hat-globo-thumbnail-scale: {{ section.settings.globo_thumbnail_zoom | default: 200 | divided_by: 100.0 }}; --hat-padding-top: {{ section.settings.padding_top | default: 48 }}px; --hat-padding-bottom: {{ section.settings.padding_bottom | default: 48 }}px;" data-patch-label="{{ 'hat_finder.patch' | t | escape }}" data-print-label="{{ 'hat_finder.print' | t | escape }}" data-currency="{{ cart.currency.iso_code | default: shop.currency | escape }}" data-money-format="{{ shop.money_format | escape }}" data-total-price-message="{{ 'hat_finder.total_price_breakdown' | t: total: '[total]', base: '[base]', addon: '[addon]' | escape }}" data-add="{{ 'products.product.add_to_cart' | t | escape }}" data-sold="{{ 'products.product.sold_out' | t | escape }}">
   {% if section.settings.heading != blank %}<h1 class="{{ section.settings.type_preset | default: 'h1' }}{% if section.settings.type_preset == 'custom' %} custom-typography custom-font-size hat-custom-typography{% endif %}" style="{% render 'hat-typography-style', settings: section.settings %}">{{ section.settings.heading | escape }}</h1>{% endif %}
   {% if section.settings.show_product_choices %}
     {% for block in section.blocks %}
@@ -34,12 +34,12 @@
     {% endfor %}
   {% endif %}
   {% if app_blocks.size > 0 %}
-    {% render 'hat-product-panel', hat: initial_product, initial_product: initial_product, section_id: section.id, detail_blocks: section.blocks %}
+    {% render 'hat-product-panel', hat: initial_product, initial_product: initial_product, section_id: section.id, detail_blocks: section.blocks, decoration_message: section.settings.decoration_message %}
   {% elsif hats.products == blank %}
-    {% render 'hat-product-panel', hat: product, initial_product: initial_product, section_id: section.id, detail_blocks: section.blocks %}
+    {% render 'hat-product-panel', hat: product, initial_product: initial_product, section_id: section.id, detail_blocks: section.blocks, decoration_message: section.settings.decoration_message %}
   {% else %}
     {% for hat in hats.products %}
-      {% render 'hat-product-panel', hat: hat, initial_product: initial_product, section_id: section.id, detail_blocks: section.blocks %}
+      {% render 'hat-product-panel', hat: hat, initial_product: initial_product, section_id: section.id, detail_blocks: section.blocks, decoration_message: section.settings.decoration_message %}
     {% endfor %}
   {% endif %}
   <p class="visually-hidden" role="status" data-selection-status></p>
@@ -106,6 +106,12 @@
 {
   "name": "t:names.find_your_hat",
   "settings": [
+    {
+      "type": "textarea",
+      "id": "decoration_message",
+      "label": "t:hat_builder.decoration_message",
+      "default": "t:hat_builder.decoration_message_default"
+    },
     {
       "type": "collection",
       "id": "collection",

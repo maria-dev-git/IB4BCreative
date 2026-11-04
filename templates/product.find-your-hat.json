@@ -50,7 +50,7 @@
               "type": "_product-list-text",
               "name": "t:names.collection_title",
               "settings": {
-                "text": "<h2>Hats with patches</h2>",
+                "text": "<p>Brotherhood Favorites</p>",
                 "width": "fit-content",
                 "max_width": "normal",
                 "alignment": "left",

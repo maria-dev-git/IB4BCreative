@@ -29,6 +29,8 @@
   "edge_spacing": "Mobile text edge spacing"
 },
   "hat_builder": {
+    "decoration_message": "Decoration message",
+    "decoration_message_default": "5 panel and 7 panel hats will have centered decoration, and 6 panel hats will have decoration offset",
     "thumbnail_enlargement_mobile": "Globo thumbnail enlargement — mobile",
     "thumbnail_enlargement_mobile_help": "Used below 750px. The enlarged image shifts inward and fits within the screen when needed.",
     "thumbnail_enlargement": "Globo thumbnail enlargement",

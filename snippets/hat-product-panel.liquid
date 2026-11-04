@@ -4,6 +4,7 @@
   @param {product} initial_product - Initially visible product.
   @param {string} section_id - Owning section's unique ID.
   @param {object} detail_blocks - Merchant-ordered section detail blocks.
+  @param {string} decoration_message - Merchant's decoration placement message.
   @example
   {% render 'hat-product-panel', hat: product, initial_product: product, section_id: section.id %}
 {% enddoc %}
@@ -37,7 +38,7 @@
       {% endif %}
     </div>
     <div class="hat-builder__details">
-      {% render 'hat-product-details', hat: hat, selected: selected, section_id: section_id, form_id: form_id, add_text: add_text, detail_blocks: detail_blocks %}
+      {% render 'hat-product-details', hat: hat, selected: selected, section_id: section_id, form_id: form_id, add_text: add_text, detail_blocks: detail_blocks, decoration_message: decoration_message %}
     </div>
   </div>
 {% endif %}
